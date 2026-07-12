@@ -136,7 +136,9 @@ class DashboardScreen extends StatelessWidget {
             Container(
               color: Colors.black.withValues(alpha: 0.7),
               child: Center(
-                child: Container(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeInOutCubic,
                   width: 320,
                   padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
@@ -551,7 +553,9 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _remoteModeToggle(BuildContext context, bool isHemat) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOutCubic,
       margin: const EdgeInsets.symmetric(horizontal: 0),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
