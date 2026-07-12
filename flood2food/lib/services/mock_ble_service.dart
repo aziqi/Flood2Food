@@ -17,18 +17,24 @@ class MockBleService extends BleServiceBase {
   @override
   bool get isConnected => _connected;
 
+  final _scanController = StreamController<List<BleScanResult>>.broadcast();
+
   @override
-  Future<List<BleScanResult>> scan({
-    Duration timeout = const Duration(seconds: 10),
+  Stream<List<BleScanResult>> get scanResultsStream => _scanController.stream;
+
+  @override
+  Future<void> startScan({
+    Duration timeout = const Duration(seconds: 15),
   }) async {
-    await Future.delayed(const Duration(seconds: 2));
-    return [
+    _scanController.add([]);
+    await Future.delayed(const Duration(seconds: 1));
+    _scanController.add([
       BleScanResult(
         deviceId: '00:11:22:33:44:55',
-        name: 'Mock Sensor Node #1',
+        name: 'Flood2Food Mock Gateway',
         rssi: -55,
       ),
-    ];
+    ]);
   }
 
   @override
@@ -80,6 +86,7 @@ class MockBleService extends BleServiceBase {
   @override
   void dispose() {
     _simTimer?.cancel();
+    _scanController.close();
     _dataController.close();
     _connectionController.close();
   }

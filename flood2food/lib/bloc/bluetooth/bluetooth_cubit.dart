@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bluetooth_state.dart';
 import '../../services/bluetooth_service.dart';
@@ -6,17 +7,26 @@ class BluetoothCubit extends Cubit<BluetoothState> {
   final BleServiceBase _service;
   bool keepServiceAlive = false;
 
+  StreamSubscription? _scanSub;
+
   BluetoothCubit({BleServiceBase? service})
       : _service = service ?? RealBleService(),
-        super(const BluetoothInitial());
+        super(const BluetoothInitial()) {
+    startScan();
+  }
 
   BleServiceBase get service => _service;
 
-  Future<void> startScan() async {
+  void startScan() async {
     emit(const BluetoothScanning([]));
+    
+    _scanSub?.cancel();
+    _scanSub = _service.scanResultsStream.listen((devices) {
+      emit(BluetoothScanning(devices));
+    });
+
     try {
-      final devices = await _service.scan();
-      emit(BluetoothScanComplete(devices));
+      await _service.startScan();
     } catch (e) {
       emit(BluetoothError(e.toString()));
     }
@@ -49,6 +59,7 @@ class BluetoothCubit extends Cubit<BluetoothState> {
 
   @override
   Future<void> close() {
+    _scanSub?.cancel();
     if (!keepServiceAlive) {
       _service.dispose();
     }

@@ -34,49 +34,32 @@ class RealBleService extends BleServiceBase {
   bool get isConnected => _connectedDevice?.isConnected ?? false;
 
   @override
-  Future<List<BleScanResult>> scan({
-    Duration timeout = const Duration(seconds: 4),
+  Stream<List<BleScanResult>> get scanResultsStream => fbp.FlutterBluePlus.scanResults.map((results) {
+    return results
+        .where((r) {
+          final name = r.advertisementData.advName;
+          // Filter to only show relevant devices
+          return name.isNotEmpty && (name.toLowerCase().contains("flood") || name.toLowerCase().contains("gateway") || name.toLowerCase().contains("node"));
+        })
+        .map((r) => BleScanResult(
+              deviceId: r.device.remoteId.str,
+              name: r.advertisementData.advName,
+              rssi: r.rssi,
+            ))
+        .toList();
+  });
+
+  @override
+  Future<void> startScan({
+    Duration timeout = const Duration(seconds: 15),
   }) async {
-    final completer = Completer<List<BleScanResult>>();
-    List<BleScanResult> mappedResults = [];
-
-    StreamSubscription? sub;
-    sub = fbp.FlutterBluePlus.scanResults.listen((results) {
-      mappedResults = results
-          .where((r) => r.device.remoteId.str.isNotEmpty)
-          .map((r) => BleScanResult(
-                deviceId: r.device.remoteId.str,
-                name: r.advertisementData.advName.isNotEmpty
-                    ? r.advertisementData.advName
-                    : r.device.remoteId.str,
-                rssi: r.rssi,
-              ))
-          .toList();
-
-      // Jika Gateway Flood2Food langsung ditemukan, segera hentikan scan agar UI tidak menunggu
-      if (mappedResults.any((d) => d.name.contains("Flood2Food") || d.name.contains("Gateway") || d.name.contains("GW"))) {
-        if (!completer.isCompleted) {
-          fbp.FlutterBluePlus.stopScan();
-          completer.complete(mappedResults);
-        }
-      }
-    });
-
     try {
       await fbp.FlutterBluePlus.startScan(
         timeout: timeout,
-        // Hapus withServices karena sering bug di beberapa HP Android pada scan pertama
       );
     } catch (e) {
       debugPrint('[BLE] Scan exception: $e');
     }
-
-    if (!completer.isCompleted) {
-      completer.complete(mappedResults);
-    }
-
-    await sub.cancel();
-    return completer.future;
   }
 
   @override

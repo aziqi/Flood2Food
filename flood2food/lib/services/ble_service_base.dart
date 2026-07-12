@@ -16,9 +16,10 @@ class BleScanResult {
 abstract class BleServiceBase {
   Stream<BluetoothSensorData> get dataStream;
   Stream<bool> get connectionState;
+  Stream<List<BleScanResult>> get scanResultsStream;
   bool get isConnected;
 
-  Future<List<BleScanResult>> scan({Duration timeout = const Duration(seconds: 10)});
+  Future<void> startScan({Duration timeout = const Duration(seconds: 15)});
   Future<void> stopScan();
   Future<void> connect(String deviceId);
   Future<void> disconnect();
