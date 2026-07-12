@@ -612,10 +612,9 @@ void updateNamaFile() {
 
 void formatSDCard() {
   if (lcdMutex != NULL) xSemaphoreTakeRecursive(lcdMutex, portMAX_DELAY);
-  if (lcdMutex != NULL) xSemaphoreTakeRecursive(lcdMutex, portMAX_DELAY);
+  lcd.backlight();
   lcd.clear();
   lcd.setCursor(0, 1); lcd.print(F(" Menghapus SD Card.."));
-  if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
   if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
   
   Serial.println(F("[SD] Memulai penghapusan data SD Card..."));
@@ -623,10 +622,9 @@ void formatSDCard() {
   if (SD.cardType() == CARD_NONE) {
     Serial.println(F("[SD] Error: SD Card Node tidak terdeteksi!"));
     if (lcdMutex != NULL) xSemaphoreTakeRecursive(lcdMutex, portMAX_DELAY);
-    if (lcdMutex != NULL) xSemaphoreTakeRecursive(lcdMutex, portMAX_DELAY);
+    lcd.backlight();
     lcd.clear();
     lcd.setCursor(0, 1); lcd.print(F(" Gagal Format SD! "));
-    if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
     if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
     soundSDError();
     
@@ -667,11 +665,10 @@ void formatSDCard() {
   }
 
   if (lcdMutex != NULL) xSemaphoreTakeRecursive(lcdMutex, portMAX_DELAY);
-  if (lcdMutex != NULL) xSemaphoreTakeRecursive(lcdMutex, portMAX_DELAY);
+  lcd.backlight();
   lcd.clear();
   lcd.setCursor(0, 0); lcd.print(F(" -- FLOOD2FOOD --   "));
   lcd.setCursor(0, 1); lcd.print(F("  SD Card Bersih!   "));
-  if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
   if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
   delay(1500);
   pulihkanLayarUtama();
@@ -1244,6 +1241,7 @@ void initPeripherals() {
   safeDelay(50);
   if (lcdMutex != NULL) xSemaphoreTakeRecursive(lcdMutex, portMAX_DELAY);
   lcd.init();
+  lcd.backlight();
   if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
   
   peripheralsInited = true;
