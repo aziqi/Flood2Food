@@ -1,0 +1,35 @@
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Python (jika ada script helper)
+__pycache__/
+*.pyc
+.venv/
+env/
+
+# Arduino / ESP32
+*.bin
+*.elf
+*.hex
+build/
+*.part
+
+# Flutter (Di handle di direktori flood2food)
+# Tapi untuk berjaga-jaga di root:
+.dart_tool/
+.packages
+build/
+.pub-cache/
+.pub/
+/build/
+*.log
+
+nul
