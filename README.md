@@ -7,7 +7,7 @@
   
   [![Flutter](https://img.shields.io/badge/Companion_App-Flutter_3-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev/)
   [![C++](https://img.shields.io/badge/Firmware-ESP32_C++-00599C?style=for-the-badge&logo=c%2B%2B)](https://www.arduino.cc/)
-  [![LoRa](https://img.shields.io/badge/Telemetry-LoRa_SX1278-FF6C37?style=for-the-badge)]()
+  [![LoRa](https://img.shields.io/badge/Telemetry-LoRa_Ebyte_E220-FF6C37?style=for-the-badge)]()
   [![AI](https://img.shields.io/badge/Brain-Google_Gemini_AI-4285F4?style=for-the-badge&logo=google-gemini)]()
 </div>
 
