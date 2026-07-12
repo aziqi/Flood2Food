@@ -478,23 +478,24 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
           ),
           if (_isLoading)
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(8.0),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Row(
                   children: [
                     SizedBox(width: 16),
-                    SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                    SizedBox(width: 8),
-                    Text(
+                    Icon(Icons.auto_awesome, color: colorScheme.primary, size: 20)
+                        .animate(onPlay: (controller) => controller.repeat())
+                        .shimmer(duration: 1200.ms, color: isDark ? Colors.white : colorScheme.primary.withValues(alpha: 0.5))
+                        .scaleXY(begin: 0.9, end: 1.1, duration: 600.ms)
+                        .then(delay: 600.ms)
+                        .scaleXY(begin: 1.1, end: 0.9, duration: 600.ms),
+                    const SizedBox(width: 12),
+                    const Text(
                       'AI sedang memikirkan...',
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
+                      style: TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.w500),
+                    ).animate(onPlay: (controller) => controller.repeat()).shimmer(duration: 1200.ms, color: isDark ? Colors.white : colorScheme.primary.withValues(alpha: 0.5)),
                   ],
                 ),
               ),
@@ -554,21 +555,20 @@ class _ChatScreenState extends State<ChatScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                   decoration: BoxDecoration(
-                    color: isUser ? colorScheme.primary : colorScheme.surface,
+                    color: isUser ? colorScheme.primary : Colors.transparent,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(24),
                       topRight: const Radius.circular(24),
                       bottomLeft: Radius.circular(isUser ? 24 : 8),
                       bottomRight: Radius.circular(isUser ? 8 : 24),
                     ),
-                    boxShadow: [
+                    boxShadow: isUser ? [
                       BoxShadow(
                         color: colorScheme.shadow.withValues(alpha: isDark ? 0.2 : 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
-                    ],
-                    border: isUser ? null : Border.all(color: colorScheme.onSurface.withValues(alpha: 0.05)),
+                    ] : null,
                   ),
                   child: isUser
                       ? Text(
@@ -580,7 +580,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           selectable: true,
                           extensionSet: md.ExtensionSet.gitHubFlavored,
                           builders: {
-                            'code': CodeElementBuilder(colorScheme: colorScheme),
+                            'code': CodeElementBuilder(colorScheme: colorScheme, context: context),
                           },
                           styleSheet: MarkdownStyleSheet(
                             p: TextStyle(fontSize: 15, height: 1.5, color: colorScheme.onSurface),
@@ -591,8 +591,12 @@ class _ChatScreenState extends State<ChatScreen> {
                               color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                             ),
                             blockquotePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            tableBorder: TableBorder.all(color: colorScheme.onSurface.withValues(alpha: 0.2), width: 1),
-                            tableCellsPadding: const EdgeInsets.all(12),
+                            tableBorder: TableBorder(
+                              horizontalInside: BorderSide(color: colorScheme.onSurface.withValues(alpha: 0.1), width: 1),
+                              bottom: BorderSide(color: colorScheme.onSurface.withValues(alpha: 0.1), width: 1),
+                              top: BorderSide(color: colorScheme.onSurface.withValues(alpha: 0.1), width: 1),
+                            ),
+                            tableCellsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             tableHead: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                             tableBody: TextStyle(color: colorScheme.onSurface),
                             // Inline code styles (fallback if not handled by builder, though builder handles 'code')
@@ -880,7 +884,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
 class CodeElementBuilder extends MarkdownElementBuilder {
   final ColorScheme colorScheme;
-  CodeElementBuilder({required this.colorScheme});
+  final BuildContext context;
+  CodeElementBuilder({required this.colorScheme, required this.context});
 
   @override
   Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) {
@@ -923,17 +928,61 @@ class CodeElementBuilder extends MarkdownElementBuilder {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: HighlightView(
-          element.textContent.trimRight(),
-          language: language.isEmpty ? 'plaintext' : language,
-          theme: atomOneDarkTheme,
-          padding: const EdgeInsets.all(16),
-          textStyle: const TextStyle(
-            fontFamily: 'monospace',
-            fontSize: 14,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Code Header (Claude-style)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: Colors.black.withValues(alpha: 0.3),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    language.isEmpty ? 'code' : language,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                      fontFamily: 'monospace',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Clipboard.setData(ClipboardData(text: element.textContent.trimRight()));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Kode disalin ke clipboard'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                    child: const Row(
+                      children: [
+                        Icon(Icons.copy_rounded, size: 14, color: Colors.white70),
+                        SizedBox(width: 4),
+                        Text('Copy Code', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Code Block
+            HighlightView(
+              element.textContent.trimRight(),
+              language: language.isEmpty ? 'plaintext' : language,
+              theme: atomOneDarkTheme,
+              padding: const EdgeInsets.all(16),
+              textStyle: const TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
+
