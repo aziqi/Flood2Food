@@ -153,7 +153,7 @@ class AppDrawer extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 120, top: 8), // Padding ekstra karena tertutup Bottom NavBar MainShell
             child: Center(
               child: Text(
-                'Flood2Food v2.0 • Quantum Edition',
+                'Flood2Food Preview Edition',
                 style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 12, fontWeight: FontWeight.bold),
               ),
             ),
