@@ -228,7 +228,9 @@ class DashboardScreen extends StatelessWidget {
         final colorScheme = Theme.of(context).colorScheme;
         return Row(
           children: [
-            Container(
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeInOutCubic,
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: colorScheme.primary.withValues(alpha: 0.1),
@@ -353,7 +355,9 @@ class DashboardScreen extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     if (gamification.isGenerating) {
-      return Container(
+      return AnimatedContainer(
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOutCubic,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: colorScheme.primary.withValues(alpha: 0.05),
@@ -430,7 +434,9 @@ class DashboardScreen extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                leading: Container(
+                leading: AnimatedContainer(
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeInOutCubic,
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: task.isCompleted ? Colors.green.withValues(alpha: 0.1) : colorScheme.onSurface.withValues(alpha: 0.05),
@@ -512,7 +518,9 @@ class DashboardScreen extends StatelessWidget {
         right: 20,
         child: Material(
           color: Colors.transparent,
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeInOutCubic,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: bgColor,
