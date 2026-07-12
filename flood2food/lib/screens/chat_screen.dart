@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:markdown/markdown.dart' as md;
+import 'package:flutter_highlighter/flutter_highlighter.dart';
+import 'package:flutter_highlighter/themes/atom-one-dark.dart';
 import '../bloc/sensor/sensor_bloc.dart';
 import '../services/ai_api_service.dart';
 import '../services/ai_model_service.dart';
@@ -575,8 +578,24 @@ class _ChatScreenState extends State<ChatScreen> {
                       : MarkdownBody(
                           data: text,
                           selectable: true,
+                          extensionSet: md.ExtensionSet.gitHubFlavored,
+                          builders: {
+                            'code': CodeElementBuilder(colorScheme: colorScheme),
+                          },
                           styleSheet: MarkdownStyleSheet(
                             p: TextStyle(fontSize: 15, height: 1.5, color: colorScheme.onSurface),
+                            listBullet: TextStyle(color: colorScheme.onSurface),
+                            blockquote: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.8), fontStyle: FontStyle.italic),
+                            blockquoteDecoration: BoxDecoration(
+                              border: Border(left: BorderSide(color: colorScheme.primary, width: 4)),
+                              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                            ),
+                            blockquotePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            tableBorder: TableBorder.all(color: colorScheme.onSurface.withValues(alpha: 0.2), width: 1),
+                            tableCellsPadding: const EdgeInsets.all(12),
+                            tableHead: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                            tableBody: TextStyle(color: colorScheme.onSurface),
+                            // Inline code styles (fallback if not handled by builder, though builder handles 'code')
                             code: TextStyle(
                               backgroundColor: colorScheme.onSurface.withValues(alpha: 0.1),
                               fontFamily: 'monospace',
@@ -853,6 +872,66 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class CodeElementBuilder extends MarkdownElementBuilder {
+  final ColorScheme colorScheme;
+  CodeElementBuilder({required this.colorScheme});
+
+  @override
+  Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) {
+    var language = '';
+    if (element.attributes['class'] != null) {
+      String lgPattern = 'language-';
+      if (element.attributes['class']!.startsWith(lgPattern)) {
+        language = element.attributes['class']!.substring(lgPattern.length);
+      }
+    }
+    
+    // Check if it's an inline code
+    if (language.isEmpty && !element.textContent.contains('\n')) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        decoration: BoxDecoration(
+          color: colorScheme.onSurface.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          element.textContent,
+          style: preferredStyle?.copyWith(fontFamily: 'monospace', fontSize: 14, color: colorScheme.onSurface),
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xff282c34),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: HighlightView(
+          element.textContent.trimRight(),
+          language: language.isEmpty ? 'plaintext' : language,
+          theme: atomOneDarkTheme,
+          padding: const EdgeInsets.all(16),
+          textStyle: const TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 14,
+          ),
         ),
       ),
     );
