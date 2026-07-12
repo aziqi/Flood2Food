@@ -27,9 +27,7 @@ class AppDrawer extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.easeInOutCubic,
+          Container(
             padding: const EdgeInsets.fromLTRB(24, 64, 24, 32),
             decoration: BoxDecoration(
               color: colorScheme.primary.withValues(alpha: 0.05),
@@ -37,9 +35,7 @@ class AppDrawer extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 600),
-                  curve: Curves.easeInOutCubic,
+                Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     color: colorScheme.primary,
@@ -64,9 +60,7 @@ class AppDrawer extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 600),
-                  curve: Curves.easeInOutCubic,
+                Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: colorScheme.secondary.withValues(alpha: 0.2),
@@ -172,9 +166,7 @@ class AppDrawer extends StatelessWidget {
   Widget _buildMenuItem(BuildContext context, {required IconData icon, required String title, Widget? subtitle, required VoidCallback onTap}) {
     final colorScheme = Theme.of(context).colorScheme;
     return ListTile(
-      leading: AnimatedContainer(
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeInOutCubic,
+      leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: colorScheme.primary.withValues(alpha: 0.1),

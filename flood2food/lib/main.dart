@@ -105,8 +105,6 @@ class Flood2FoodApp extends StatelessWidget {
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeMode,
-            themeAnimationDuration: const Duration(milliseconds: 600),
-            themeAnimationCurve: Curves.easeInOutCubic,
             home: const SplashScreen(),
           );
         },

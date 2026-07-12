@@ -18,9 +18,7 @@ class PlantHealthCard extends StatelessWidget {
                 ? Colors.orange
                 : Colors.red;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.easeInOutCubic,
+    return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(

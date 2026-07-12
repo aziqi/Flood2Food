@@ -41,9 +41,7 @@ class SensorBlockCard extends StatelessWidget {
         final colorScheme = Theme.of(context).colorScheme;
         final isDark = colorScheme.brightness == Brightness.dark;
 
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 600),
-          curve: Curves.easeInOutCubic,
+        return Container(
           margin: const EdgeInsets.only(bottom: 20),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
