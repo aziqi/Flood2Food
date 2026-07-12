@@ -1,85 +1,96 @@
 <div align="center">
-  <img src="flood2food/assets/app_logo.png" width="150" alt="Flood2Food Logo" />
   
-  # 🌱 Flood2Food: IoT Precision Agriculture & Gamification App
-  **Sistem Pemulihan Lahan Sawah Pascabanjir Berbasis Industrial IoT dan Kecerdasan Buatan**
+  <img src="flood2food/assets/splash.jpg" width="100%" alt="Flood2Food Banner" />
   
-  [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter)](https://flutter.dev/)
-  [![C++](https://img.shields.io/badge/C++-ESP32-00599C?logo=c%2B%2B)](https://www.arduino.cc/)
-  [![LoRa](https://img.shields.io/badge/Network-LoRa_&_BLE-FF6C37)]()
-  [![AI](https://img.shields.io/badge/AI-Gemini_&_Local-4285F4?logo=google-gemini)]()
+  # 🌱 Flood2Food
+  **Sistem Cerdas Pemulihan Lahan Sawah Pascabanjir Berbasis IoT & Gamifikasi AI**
+  
+  [![Flutter](https://img.shields.io/badge/Companion_App-Flutter_3-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev/)
+  [![C++](https://img.shields.io/badge/Firmware-ESP32_C++-00599C?style=for-the-badge&logo=c%2B%2B)](https://www.arduino.cc/)
+  [![LoRa](https://img.shields.io/badge/Telemetry-LoRa_SX1278-FF6C37?style=for-the-badge)]()
+  [![AI](https://img.shields.io/badge/Brain-Google_Gemini_AI-4285F4?style=for-the-badge&logo=google-gemini)]()
 </div>
+
+<br/>
+
+> **Flood2Food** adalah terobosan *Precision Agriculture* (Agrikultur Presisi) untuk menyelamatkan lahan padi pascabanjir. Sistem ini mendeteksi 7 parameter vital tanah secara *real-time* via sensor Modbus RS485, mengirimkannya sejauh belasan kilometer via LoRa, dan menyajikannya ke *smartphone* petani. Lebih dari sekadar dasbor, aplikasi ini menggunakan **Kecerdasan Buatan (AI)** untuk mendiagnosis tanah dan memberikan misi gamifikasi harian yang terukur dan aplikatif! 🚀
 
 ---
 
-## 📖 Tentang Proyek (PKM-KC)
-**Flood2Food** adalah sistem terintegrasi (Hardware + Software) yang dirancang untuk memulihkan lahan sawah padi pascabanjir. Sistem ini memantau 7 parameter krusial tanah (Nitrogen, Fosfor, Kalium, pH, Konduktivitas Elektrik/EC, Suhu, dan Kelembaban) menggunakan sensor *Industrial Grade* (RS485 Modbus). Data kemudian dikirim jarak jauh via **LoRa**, dikumpulkan di **Gateway**, dan disinkronisasikan ke *Smartphone* petani via **Bluetooth Low Energy (BLE)**.
+## ✨ Fitur Unggulan
 
-Aplikasi seluler (Flutter) tidak hanya menampilkan grafik data, tetapi juga menggunakan **AI (Google Gemini & Local Fallback)** untuk mendiagnosis masalah tanah dan memberikan "Tugas Harian" (Gamifikasi) langkah-demi-langkah bagi petani agar tanah kembali subur.
+<table>
+  <tr>
+    <td align="center">📡<br/><b>Industrial IoT Telemetry</b></td>
+    <td align="center">⚡<br/><b>Quantum BLE Sync</b></td>
+    <td align="center">🧠<br/><b>AI-Powered Gamification</b></td>
+    <td align="center">🛡️<br/><b>Bulletproof Offline AI</b></td>
+  </tr>
+  <tr>
+    <td>Transmisi jarak jauh LoRa dari sawah ke Gateway dengan toleransi <i>disconnect</i> otomatis (Deep Sleep).</td>
+    <td>Algoritma <i>Smart Chunking</i> khusus untuk menembakkan ribuan baris log CSV ke HP dalam 2 detik tanpa <i>crash</i>.</td>
+    <td>Alih-alih panduan kaku, AI Gemini akan meracik "Misi Pemulihan Harian" sesuai penyakit tanah secara spesifik.</td>
+    <td>Tidak ada kuota internet? Sistem <i>Local Fallback</i> akan memberikan instruksi agronomi darurat dari <i>database</i> internal.</td>
+  </tr>
+</table>
 
-## 🏗️ Arsitektur Sistem
+---
 
-Proyek ini terdiri dari 3 pilar utama:
+## 🏗️ Anatomi Sistem (Source Code)
 
-### 1. 📡 Sensor Node (Node / Transmitter)
-Berada langsung di petak sawah. Menggunakan ESP32 yang terhubung dengan **Sensor NPK 7-in-1 (Modbus RS485)**.
-- **Direktori:** `/node`
-- **Fitur Utama:** Pembacaan presisi sensor, protokol Modbus RTU, Deep Sleep (hemat daya), dan transmisi data aman menggunakan Modul LoRa (Ra-02 / SX1278). 
-- Mengirim paket data yang dikompresi ke Gateway.
+Repositori ini memuat *Full-Stack Code* dari seluruh ekosistem **Flood2Food**:
 
-### 2. 🖲️ Gateway (Receiver & Data Logger)
-Diletakkan di saung/pos pantau. Menerima data dari puluhan Node.
-- **Direktori:** `/gateway`
-- **Fitur Utama:** Penerima LoRa, layar LCD I2C, pencatat CSV *real-time* ke **SD Card**, dan pemancar Bluetooth Low Energy (NimBLE ESP32).
-- Dilengkapi sistem *Smart Chunking* dan antrean transmisi anti-crash yang sanggup mengirimkan ribuan baris riwayat (History) ke HP dalam hitungan detik.
+### 1. 📍 Sensor Node (`/node`)
+Perangkat ujung (*Edge Device*) yang ditancapkan langsung ke petak sawah.
+* **Sensor:** NPK 7-in-1 (Nitrogen, Fosfor, Kalium, pH, EC, Suhu, Kelembaban).
+* **Mikrokontroler:** ESP32.
+* **Protokol Utama:** Modbus RTU (RS485) & LoRa (Transmitter).
 
-### 3. 📱 Aplikasi Smartphone (Flutter)
-Aplikasi pendamping (Companion App) modern untuk petani.
-- **Direktori:** `/flood2food`
-- **Fitur Utama:** 
-  - **BLE Sync:** Sinkronisasi *seamless* file CSV secara otomatis.
-  - **Dashboard:** Pemantauan parameter NPK, pH, EC, dll secara real-time.
-  - **Gamification (Misi Harian):** Generasi misi harian secara cerdas menggunakan Google Gemini AI API (atau *Local Fallback AI* jika luring) untuk merehabilitasi tanah berdasarkan defisiensi gizi spesifik pada sensor.
+### 2. 🗼 Gateway Logger (`/gateway`)
+Stasiun pengumpul data yang diletakkan di saung/pos pantau pertanian.
+* **Komponen:** ESP32 + Modul SD Card + LoRa (Receiver) + LCD I2C.
+* **Peran:** Menyimpan data *real-time* ke format CSV dan menembakkannya (Broadcast) ke *smartphone* petani melalui Bluetooth Low Energy (NimBLE).
 
-## 🚀 Panduan Instalasi (Quick Start)
+### 3. 📱 Aplikasi Flutter (`/flood2food`)
+Aplikasi seluler (Android/iOS) modern sebagai pusat kendali (*Companion App*).
+* **Desain:** Modern, responsif, dan *user-friendly* untuk petani.
+* **Fungsi:** Visualisasi grafik NPK, riwayat CSV interaktif, sinkronisasi *seamless*, dan Gamifikasi AI Cerdas.
+* *(Note: Folder ini berisi seluruh mentahan / source-code aplikasi sebelum di-compile ke APK)*
 
-### Bagian 1: Perangkat Keras (Arduino IDE)
-1. Buka `node/node.ino` dan `gateway/gateway.ino` menggunakan Arduino IDE.
-2. Pastikan Anda telah menginstal pustaka (Library) berikut:
-   - `LoRa` oleh Sandeep Mistry
-   - `NimBLE-Arduino` oleh h2zero (Sangat penting! Jangan gunakan library BLE bawaan ESP32).
-   - `ArduinoJson` oleh Benoit Blanchon
+---
+
+## 🛠️ Instalasi & Penggunaan
+
+### 💻 A. Flash Firmware (Hardware)
+1. Buka file `node/node.ino` dan `gateway/gateway.ino` menggunakan **Arduino IDE**.
+2. Pastikan *Library* wajib ini terinstal di PC Anda:
+   - `LoRa` by Sandeep Mistry
+   - `NimBLE-Arduino` by h2zero *(Wajib untuk Gateway!)*
+   - `ArduinoJson` by Benoit Blanchon
    - `ModbusMaster`
-   - `LiquidCrystal_I2C` & `RTClib`
-3. Sesuaikan pin LoRa (SS, RST, DIO0) jika menggunakan custom board, lalu *Flash* ke ESP32.
+3. Sesuaikan PIN pada konfigurasi jika Anda menggunakan *custom board*. *Compile* dan *Upload*!
 
-### Bagian 2: Aplikasi Seluler (Flutter)
-1. Masuk ke direktori aplikasi:
+### 📱 B. Build Aplikasi (Flutter)
+1. Buka *Terminal*, masuk ke direktori aplikasi:
    ```bash
    cd flood2food
    ```
-2. Instal dependencies:
+2. Tarik semua *dependencies*:
    ```bash
    flutter pub get
    ```
-3. Buat file `.env` di direktori `flood2food` dan isi dengan konfigurasi API (opsional untuk AI):
+3. (Opsional) Pasang API Key Gemini AI Anda di file `.env` root aplikasi:
    ```env
-   AI_API_KEY=your_gemini_api_key_here
+   AI_API_KEY=KODE_API_GEMINI_ANDA
    AI_MODEL=gemini-1.5-flash
    ```
-4. Jalankan aplikasi di perangkat Android:
+4. Jalankan (Run) ke emulator/HP, atau *Build* menjadi APK:
    ```bash
-   flutter run
+   flutter build apk --split-per-abi
    ```
 
-## 🧠 Fitur "Offline AI" (Local Fallback)
-Jika koneksi internet petani terputus atau kuota API habis, aplikasi memiliki modul pakar mini (Local Fallback AI). Modul ini tidak mengandalkan statis *if-else* biasa, melainkan merotasi *database* langkah-langkah agronomi (seperti injeksi Dolomit untuk pH asam, *flushing* air untuk EC tinggi, dll) agar instruksi harian tetap akurat secara medis dan sangat bervariasi.
-
-## 🖼️ Tampilan Aplikasi (Screenshots)
-
-<div align="center">
-  <img src="flood2food/assets/splash.jpg" width="30%" />
-</div>
-
 ---
-*Dibuat dengan ❤️ untuk Program Kreativitas Mahasiswa Karsa Cipta (PKM-KC).*
+<div align="center">
+  <p>💡 <i>Dipersembahkan oleh Tim PKM-KC untuk ketahanan pangan nasional.</i></p>
+  <img src="flood2food/assets/app_logo.png" width="80" alt="Logo" />
+</div>
