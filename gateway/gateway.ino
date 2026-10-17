@@ -29,6 +29,8 @@ unsigned long lastDebounceTime = 0;
 String cachedFields[13];
 bool hasCachedData = false;
 
+
+
 // ==================== DEFINISI UUID BLE ====================
 #define LORA_RX_PIN    16
 #define LORA_TX_PIN    17
@@ -906,12 +908,28 @@ void simpanKeSDGateway(String payload) {
   }
 }
 
+// ==================== INTERRUPT TOMBOL ====================
+volatile bool isrBtnFlag = false;
+volatile unsigned long isrLastDebounce = 0;
+const int isrDebounceDelay = 20;
+
+void IRAM_ATTR isrTombol() {
+  unsigned long now = millis();
+  if (now - isrLastDebounce > isrDebounceDelay) {
+    if (digitalRead(PIN_TOMBOL_LCD) == LOW) {
+      isrLastDebounce = now;
+      isrBtnFlag = true;
+    }
+  }
+}
+
 void setup() {
   lcdMutex = xSemaphoreCreateRecursiveMutex();
   Serial.begin(115200);
   delay(100);
   
   pinMode(PIN_TOMBOL_LCD, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(PIN_TOMBOL_LCD), isrTombol, FALLING);
   
   pinMode(PIN_BUZZER_1, OUTPUT);
   pinMode(PIN_BUZZER_2, OUTPUT);
@@ -987,18 +1005,15 @@ void setup() {
 }
 
 void loop() {
-  bool currentReading = digitalRead(PIN_TOMBOL_LCD);
-  if (currentReading != lastButtonReading) {
-    lastDebounceTime = millis();
-  }
-  if ((millis() - lastDebounceTime) > 50) {
-    if (currentReading != buttonState) {
-      buttonState = currentReading;
-      if (buttonState == LOW) {
-        
-        if (millis() - lastWipePressTime > 1500) {
-          wipeButtonCount = 0; 
-        }
+  // =========================================================================
+  // HARDWARE INTERRUPT (ZERO GHOST TOUCH)
+  // =========================================================================
+  if (isrBtnFlag) {
+    isrBtnFlag = false;
+
+    if (millis() - lastWipePressTime > 1500) {
+      wipeButtonCount = 0; 
+    }
         wipeButtonCount++;
         lastWipePressTime = millis();
         
@@ -1092,16 +1107,13 @@ void loop() {
             tampilkanDataLCD(cachedFields); // Render ulang sekejap mata
           }
         }
-      }
-    }
-  }
-  lastButtonReading = currentReading;
+  } // Tutup isrBtnFlag
 
   if (needToSendHistoryBLE) {
     needToSendHistoryBLE = false;
     kirimHistorySDBle();
   }
-  
+
   cekStatusLoRa();
 
   // FITUR-3: Re-advertise BLE jika putus tanpa trigger disconnect event (misal HP menjauh tiba-tiba)
@@ -1420,7 +1432,7 @@ void loop() {
     doc["timestamp"]   = timestampBuf;
     doc["temperature"] = suhu;
     doc["humidity"]    = humi;
-    doc["ec"]          = kond / 1000.0;
+    doc["ec"]          = kond;          // satuan final µS/cm (node-standard, konsisten dg node BLE)
     doc["ph"]          = ph;
     doc["nitrogen"]    = n;
     doc["phosphorus"]  = p;
@@ -1439,3 +1451,5 @@ void loop() {
     }
   }
 }
+
+

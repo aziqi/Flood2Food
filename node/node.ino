@@ -69,18 +69,37 @@
 #define MODBUS_RETRY_DELAY  100
 #define SD_RETENTION_DAYS   30
 
+// Stabilisasi pembacaan sensor (berlaku mode Normal & Hemat).
+// Sensor NPK butuh "pemanasan": bacaan ke-1 s.d. ke-2 ngawang,
+// baru ke-3 s.d. ke-5 stabil. Strategi terbaik: baca 5x, buang 2
+// pertama, rata-rata 3 sisanya per-channel. Mode kalibrasi TIDAK
+// pakai ini (tetap 1x baca instan agar responsif).
+#define SENSOR_WARMUP_READS   5
+#define SENSOR_WARMUP_DROP    2
+#define SENSOR_WARMUP_GAP_MS  150
+
 // #################################################################
-// ##   BAGIAN KALIBRASI - UBAH OFFSET DI SINI SAJA               ##
+// ##   BAGIAN KALIBRASI - MODEL 2-TITIK (GAIN + ANCHOR UDARA)   ##
 // #################################################################
-// Gunakan 'const' agar tidak bisa dimodifikasi secara tidak sengaja di tempat lain.
-// Untuk mengubah nilai, edit di sini saja lalu flash ulang.
-const float CAL_TEMP_OFFSET = 0.0;
-const float CAL_HUMI_OFFSET = 0.0;
-const float CAL_COND_OFFSET = 0.0;
-const float CAL_PH_OFFSET   = 0.0;
-const float CAL_N_OFFSET    = 0.0;
-const float CAL_P_OFFSET    = 0.0;
-const float CAL_K_OFFSET    = -700.0;
+// Model: value = (raw - RAW_AIR) * GAIN
+//   - RAW_AIR = nilai raw saat sensor di UDARA (tidak menyentuh tanah).
+//   - Karena (RAW_AIR - RAW_AIR)*GAIN = 0, nilai udara SELALU 0
+//     -> gak berantakan walau ganti sensor / offset.
+//   - Untuk T & pH (punya nol absolut) pakai GAIN=1 + OFFSET (raw*1+offset).
+// Untuk ngubah RAW_AIR otomatis, pakai perintah CALIB_AIR dari HP/LoRa
+// (sensor diletakkan di udara, lalu kirim CALIB_AIR -> raw saat itu di-capture).
+// Default di bawah sudah dihitung dari data pengguna (target: Suhu 28.5, H 56,
+// EC 400, pH 5.98, N 24, P 5.57, K 242.42).
+// #################################################################
+// --- T & pH: model offset (gain=1) ---
+#define CAL_TEMP_OFFSET   (-0.1f)   // raw/10 + (-0.1)  -> 286/10-0.1 = 28.5
+#define CAL_HUMI_OFFSET   ( 0.0f)   // raw/10 + 0      -> 560/10    = 56.0
+#define CAL_PH_OFFSET     ( 5.49f)  // raw/100 + 5.49  -> 49/100+5.49 = 5.98
+// --- N, P, EC, K: model gain/anchor (runtime bisa di-override via Preferences) ---
+float CAL_COND_AIR = 0.0f;   float CAL_COND_GAIN =  1.39860f;  // (286-0)*1.3986 = 400 uS/cm
+float CAL_N_AIR    = 0.0f;   float CAL_N_GAIN    =  2.66667f;  // (9-0)*2.6667   = 24 mg/kg
+float CAL_P_AIR    = 0.0f;   float CAL_P_GAIN    =  0.09283f;  // (60-0)*0.09283 = 5.57 mg/kg
+float CAL_K_AIR    = 700.0f; float CAL_K_GAIN    = -4.32890f;  // (644-700)*-4.3289 = 242.42 mg/kg
 // #################################################################
 
 HardwareSerial ModbusSerial(2);
@@ -107,6 +126,7 @@ unsigned long lastSensorReadMillis = 0;
 void toggleModeAction();
 void pulihkanLayarUtama();
 void tampilkanDataLCD(float ph, float suhu, float humi, float n, float p, float k, float kond);
+bool captureAirCalibration();
 void soundBleConnect();
 void soundBleDisconnect();
 
@@ -281,6 +301,28 @@ class MyNodeRXCallbacks : public BLECharacteristicCallbacks {
           if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
           if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
         }
+      } else if (rxValue == "CALIB_AIR") {
+        // Capture raw udara sebagai anchor kalibrasi (jamin nilai udara = 0)
+        Serial.println("[BLE CMD] Capture anchor kalibrasi UDARA!");
+        bool ok = captureAirCalibration();
+        if (lcdMutex != NULL) xSemaphoreTakeRecursive(lcdMutex, portMAX_DELAY);
+        if (lcdMutex != NULL) xSemaphoreTakeRecursive(lcdMutex, portMAX_DELAY);
+        lcd.backlight();
+        lcd.clear();
+        lcd.setCursor(0, 0); lcd.print(F(" -- FLOOD2FOOD --   "));
+        lcd.setCursor(0, 1); lcd.print(ok ? F("  Calib Udara OK!   ") : F("  Calib Udara GAGAL"));
+        lcd.setCursor(0, 2);
+        if (ok) {
+          lcd.print(F(" N:")); lcd.print((int)CAL_N_AIR);
+          lcd.print(F(" P:")); lcd.print((int)CAL_P_AIR);
+          lcd.setCursor(0, 3);
+          lcd.print(F(" K:")); lcd.print((int)CAL_K_AIR);
+          lcd.print(F(" EC:")); lcd.print((int)CAL_COND_AIR);
+        }
+        if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
+        if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
+        delay(2000);
+        pulihkanLayarUtama();
       } else if (rxValue.startsWith("SET_INTERVAL:")) {
         int firstColon = rxValue.indexOf(':');
         int secondColon = rxValue.indexOf(':', firstColon + 1);
@@ -413,6 +455,107 @@ uint8_t readSensorWithRetry() {
     safeDelay(MODBUS_RETRY_DELAY);
   }
   return result;
+}
+
+// Baca sensor berkali-kali lalu kembalikan rata-rata yang SUDAH distabilkan.
+// Strategi: baca SENSOR_WARMUP_READS kali, buang SENSOR_WARMUP_DROP bacaan
+// pertama (masa ngawang/pemanasan), rata-rata sisanya per-channel.
+// Mengisi 7 raw output. Return jumlah bacaan valid yang dipakai (0 = gagal total).
+int readSensorStable(int16_t &outTemp, int16_t &outHumi, int16_t &outKond,
+                     int16_t &outPH,   int16_t &outN,   int16_t &outP,   int16_t &outK) {
+  int16_t bufT[SENSOR_WARMUP_READS], bufH[SENSOR_WARMUP_READS];
+  int16_t bufKond[SENSOR_WARMUP_READS], bufPH[SENSOR_WARMUP_READS];
+  int16_t bufN[SENSOR_WARMUP_READS], bufP[SENSOR_WARMUP_READS], bufK[SENSOR_WARMUP_READS];
+  int valid = 0;
+
+  for (int i = 0; i < SENSOR_WARMUP_READS; i++) {
+    wdtReset();
+    uint8_t r = readSensorWithRetry();
+    if (r == node.ku8MBSuccess) {
+      bufT[valid]   = (int16_t)node.getResponseBuffer(0);
+      bufH[valid]   = (int16_t)node.getResponseBuffer(1);
+      bufKond[valid]= (int16_t)node.getResponseBuffer(2);
+      bufPH[valid]  = (int16_t)node.getResponseBuffer(3);
+      bufN[valid]   = (int16_t)node.getResponseBuffer(4);
+      bufP[valid]   = (int16_t)node.getResponseBuffer(5);
+      bufK[valid]   = (int16_t)node.getResponseBuffer(6);
+      valid++;
+      Serial.printf("[WARMUP] Baca %d/%d (valid %d) -> rawK:%d pH:%d\n",
+                     i + 1, SENSOR_WARMUP_READS, valid, bufK[valid-1], bufPH[valid-1]);
+    } else {
+      Serial.printf("[WARMUP] Baca %d/%d GAGAL\n", i + 1, SENSOR_WARMUP_READS);
+    }
+    if (i < SENSOR_WARMUP_READS - 1) safeDelay(SENSOR_WARMUP_GAP_MS);
+  }
+
+  if (valid <= SENSOR_WARMUP_DROP) {
+    // Terlalu sedikit bacaan valid -> anggap gagal (biar masuk jalur error)
+    return 0;
+  }
+
+  int start = SENSOR_WARMUP_DROP;
+  long sumT = 0, sumH = 0, sumKond = 0, sumPH = 0, sumN = 0, sumP = 0, sumK = 0;
+  int count = valid - start;
+  for (int i = start; i < valid; i++) {
+    sumT    += bufT[i];
+    sumH    += bufH[i];
+    sumKond += bufKond[i];
+    sumPH   += bufPH[i];
+    sumN    += bufN[i];
+    sumP    += bufP[i];
+    sumK    += bufK[i];
+  }
+  outTemp  = (int16_t)(sumT / count);
+  outHumi  = (int16_t)(sumH / count);
+  outKond  = (int16_t)(sumKond / count);
+  outPH    = (int16_t)(sumPH / count);
+  outN     = (int16_t)(sumN / count);
+  outP     = (int16_t)(sumP / count);
+  outK     = (int16_t)(sumK / count);
+  return count;
+}
+
+// Capture nilai raw saat sensor di UDARA sebagai anchor (RAW_AIR).
+// Model: value = (raw - RAW_AIR)*GAIN -> jamin nilai udara = 0.
+// Dipanggil dari BLE/LoRa perintah "CALIB_AIR". Simpan ke Preferences.
+bool captureAirCalibration() {
+  uint8_t result = readSensorWithRetry();
+  if (result != node.ku8MBSuccess) {
+    Serial.println(F("[CAL_AIR] Gagal baca sensor untuk anchor udara!"));
+    return false;
+  }
+  int16_t rawKond = (int16_t)node.getResponseBuffer(2);
+  int16_t rawN    = (int16_t)node.getResponseBuffer(4);
+  int16_t rawP    = (int16_t)node.getResponseBuffer(5);
+  int16_t rawK    = (int16_t)node.getResponseBuffer(6);
+
+  CAL_COND_AIR = (float)rawKond;
+  CAL_N_AIR    = (float)rawN;
+  CAL_P_AIR    = (float)rawP;
+  CAL_K_AIR    = (float)rawK;
+
+  preferences.putFloat("calCondAir", CAL_COND_AIR);
+  preferences.putFloat("calNAir",    CAL_N_AIR);
+  preferences.putFloat("calPAir",    CAL_P_AIR);
+  preferences.putFloat("calKAir",    CAL_K_AIR);
+
+  Serial.printf("[CAL_AIR] Anchor udara di-capture -> COND:%d N:%d P:%d K:%d\n",
+                 rawKond, rawN, rawP, rawK);
+
+  // Notifikasi ke HP (jika terhubung)
+  if (nodeBleConnected && pNodeTxCharacteristic != NULL) {
+    StaticJsonDocument<200> doc;
+    doc["type"]     = "calib_air_done";
+    doc["cond_air"] = rawKond;
+    doc["n_air"]    = rawN;
+    doc["p_air"]    = rawP;
+    doc["k_air"]    = rawK;
+    String jsonStr;
+    serializeJson(doc, jsonStr);
+    pNodeTxCharacteristic->setValue((uint8_t*)jsonStr.c_str(), jsonStr.length());
+    pNodeTxCharacteristic->notify();
+  }
+  return true;
 }
 
 #define NOTE_C4  262
@@ -1349,6 +1492,14 @@ void setup() {
   hematIntervalSec  = preferences.getUInt("itvlHemat",  HEMAT_INTERVAL_SEC_DEFAULT);
   if (!modeHematDaya) normalModeStartUs = esp_timer_get_time();
 
+  // --- Muat kalibrasi anchor udara (jika pernah di-capture via CALIB_AIR) ---
+  CAL_COND_AIR = preferences.getFloat("calCondAir", CAL_COND_AIR);
+  CAL_N_AIR    = preferences.getFloat("calNAir",    CAL_N_AIR);
+  CAL_P_AIR    = preferences.getFloat("calPAir",    CAL_P_AIR);
+  CAL_K_AIR    = preferences.getFloat("calKAir",    CAL_K_AIR);
+  Serial.printf("[CAL] Anchor udara -> COND:%g N:%g P:%g K:%g\n",
+                 CAL_COND_AIR, CAL_N_AIR, CAL_P_AIR, CAL_K_AIR);
+
   rtc_gpio_deinit((gpio_num_t)LORA_M0_PIN);
   rtc_gpio_deinit((gpio_num_t)LORA_M1_PIN);
   if (wakeup_reason != ESP_SLEEP_WAKEUP_EXT0) {
@@ -1451,21 +1602,24 @@ void setup() {
     if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
     delay(50);
     if (lcdMutex != NULL) xSemaphoreTakeRecursive(lcdMutex, portMAX_DELAY);
-    lcd.setCursor(0, 0); lcd.print(F("-- KALIBRASI --     "));
+    lcd.setCursor(0, 0); lcd.print(F("-- FLOOD2FOOD --   "));
     lcd.setCursor(0, 1);
     if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
     char bufKal[21];
-    snprintf(bufKal, sizeof(bufKal), "T:%+.1f H:%+.1f     ", CAL_TEMP_OFFSET, CAL_HUMI_OFFSET);
+    snprintf(bufKal, sizeof(bufKal), "Node: %s Mode:%s", NODE_ID, modeHematDaya ? "H" : "N");
     if (lcdMutex != NULL) xSemaphoreTakeRecursive(lcdMutex, portMAX_DELAY);
     lcd.print(bufKal);
     lcd.setCursor(0, 2);
     if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
-    snprintf(bufKal, sizeof(bufKal), "Kd:%+.0f pH:%+.1f    ", CAL_COND_OFFSET, CAL_PH_OFFSET);
+    if (modeHematDaya)
+      snprintf(bufKal, sizeof(bufKal), "Int: %lu mnt        ", hematIntervalSec / 60);
+    else
+      snprintf(bufKal, sizeof(bufKal), "Int: %lu dtk        ", normalIntervalSec);
     if (lcdMutex != NULL) xSemaphoreTakeRecursive(lcdMutex, portMAX_DELAY);
     lcd.print(bufKal);
     lcd.setCursor(0, 3);
     if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
-    snprintf(bufKal, sizeof(bufKal), "N:%+.0f P:%+.0f K:%+.0f", CAL_N_OFFSET, CAL_P_OFFSET, CAL_K_OFFSET);
+    snprintf(bufKal, sizeof(bufKal), "                    ");
     if (lcdMutex != NULL) xSemaphoreTakeRecursive(lcdMutex, portMAX_DELAY);
     lcd.print(bufKal);
     if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
@@ -1588,6 +1742,11 @@ void loop() {
           }
           silentWake = false;
           break;
+        } else if (resp == "CALIB_AIR") {
+          Serial.println("[LORA CMD] Capture anchor kalibrasi UDARA!");
+          captureAirCalibration();
+          silentWake = false;
+          break;
         } else if (resp == "ABORT") {
           cancelHistory = true;
           silentWake = false;
@@ -1635,7 +1794,7 @@ void loop() {
           } else if (nextCmd == "H" || nextCmd == "SEND_HISTORY") {
             cmd = "H"; 
             break;
-          } else if (nextCmd == "TOGGLE_MODE" || nextCmd == "CALIB_START" || nextCmd == "CALIB_STOP" || nextCmd == "CALIB_READ" || nextCmd == "ABORT" || nextCmd == "DELETE_SD" || nextCmd.startsWith("SET_INTERVAL:") || nextCmd == "FORCE_READ") {
+          } else if (nextCmd == "TOGGLE_MODE" || nextCmd == "CALIB_START" || nextCmd == "CALIB_STOP" || nextCmd == "CALIB_READ" || nextCmd == "CALIB_AIR" || nextCmd == "ABORT" || nextCmd == "DELETE_SD" || nextCmd.startsWith("SET_INTERVAL:") || nextCmd == "FORCE_READ") {
             cmd = nextCmd; // Teruskan ke if-else utama di bawah
             break;
           }
@@ -1712,6 +1871,17 @@ void loop() {
         lcd.setCursor(0, 1); lcd.print(F(" Mengambil Data...  "));
         if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
       }
+    } else if (cmd == "CALIB_AIR") {
+      Serial.println("[LORA CMD] Capture anchor kalibrasi UDARA!");
+      bool ok = captureAirCalibration();
+      if (lcdMutex != NULL) xSemaphoreTakeRecursive(lcdMutex, portMAX_DELAY);
+      lcd.backlight();
+      lcd.clear();
+      lcd.setCursor(0, 0); lcd.print(F(" -- FLOOD2FOOD --   "));
+      lcd.setCursor(0, 1); lcd.print(ok ? F("  Calib Udara OK!   ") : F("  Calib Udara GAGAL"));
+      if (lcdMutex != NULL) xSemaphoreGiveRecursive(lcdMutex);
+      delay(2000);
+      pulihkanLayarUtama();
     } else if (cmd == "ABORT") {
       cancelHistory = true;
       Serial.println("[LORA CMD] Dibatalkan!");
@@ -1804,27 +1974,45 @@ void loop() {
 
   if (!isSyncing) {
     updateLED(3);
-    uint8_t result = readSensorWithRetry();
+    int16_t rawTemp, rawHumi, rawKond, rawPH, rawN, rawP, rawK;
+    uint8_t result = node.ku8MBSuccess;
+
+    if (modeKalibrasi) {
+      // Mode kalibrasi: baca 1x instan (responsif saat ngecek tanah)
+      result = readSensorWithRetry();
+      if (result == node.ku8MBSuccess) {
+        rawTemp  = (int16_t)node.getResponseBuffer(0);
+        rawHumi  = (int16_t)node.getResponseBuffer(1);
+        rawKond  = (int16_t)node.getResponseBuffer(2);
+        rawPH    = (int16_t)node.getResponseBuffer(3);
+        rawN     = (int16_t)node.getResponseBuffer(4);
+        rawP     = (int16_t)node.getResponseBuffer(5);
+        rawK     = (int16_t)node.getResponseBuffer(6);
+      }
+    } else {
+      // Mode Normal & Hemat: stabilisasi (warmup 5x, buang 2, rata-rata 3)
+      int used = readSensorStable(rawTemp, rawHumi, rawKond, rawPH, rawN, rawP, rawK);
+      if (used <= 0) result = 0x00; // gagal total -> masuk jalur error
+      else {
+        Serial.printf("[WARMUP] Stabil -> rawT:%d rawH:%d rawKond:%d rawPH:%d rawN:%d rawP:%d rawK:%d\n",
+                      rawTemp, rawHumi, rawKond, rawPH, rawN, rawP, rawK);
+      }
+    }
     lastSensorReadMillis = millis(); // â­ Catat waktu pengambilan data terakhir
 
   if (result == node.ku8MBSuccess) {
     errorCount = 0;
 
-    int16_t rawTemp = (int16_t)node.getResponseBuffer(0);
-    int16_t rawHumi = (int16_t)node.getResponseBuffer(1);
-    int16_t rawKond = (int16_t)node.getResponseBuffer(2);
-    int16_t rawPH   = (int16_t)node.getResponseBuffer(3);
-    int16_t rawN    = (int16_t)node.getResponseBuffer(4);
-    int16_t rawP    = (int16_t)node.getResponseBuffer(5);
-    int16_t rawK    = (int16_t)node.getResponseBuffer(6);
-
-    float tempCal = ((float)rawTemp / 10.0) + CAL_TEMP_OFFSET;
-    float humiCal = ((float)rawHumi / 10.0) + CAL_HUMI_OFFSET;
-    float condCal = ((float)rawKond)         + CAL_COND_OFFSET;
-    float phCal   = ((float)rawPH / 100.0)   + CAL_PH_OFFSET; 
-    float nCal    = ((float)rawN)             + CAL_N_OFFSET;
-    float pCal    = ((float)rawP)             + CAL_P_OFFSET;
-    float kCal    = ((float)rawK)             + CAL_K_OFFSET;
+    // --- MODEL KALIBRASI 2-TITIK (GAIN + ANCHOR UDARA) ---
+    // T & pH: gain=1 + offset. N,P,EC,K: (raw - RAW_AIR) * GAIN.
+    // Nilai udara otomatis 0 karena (RAW_AIR-RAW_AIR)*GAIN = 0.
+    float tempCal = ((float)rawTemp / 10.0f) + CAL_TEMP_OFFSET;
+    float humiCal = ((float)rawHumi / 10.0f) + CAL_HUMI_OFFSET;
+    float condCal = ((float)(rawKond - CAL_COND_AIR)) * CAL_COND_GAIN;
+    float phCal   = ((float)rawPH / 100.0f)   + CAL_PH_OFFSET;
+    float nCal    = ((float)(rawN    - CAL_N_AIR))  * CAL_N_GAIN;
+    float pCal    = ((float)(rawP    - CAL_P_AIR))  * CAL_P_GAIN;
+    float kCal    = ((float)(rawK    - CAL_K_AIR))  * CAL_K_GAIN;
 
     Serial.println(F("\n=============================================="));
     Serial.println(F(" ðŸŒ¿ DATA SENSOR NPK (KALIBRASI MENTAH) ðŸŒ¿"));
@@ -1878,7 +2066,7 @@ void loop() {
       doc["timestamp"]   = timestampBuf;
       doc["temperature"] = tempCal;
       doc["humidity"]    = humiCal;
-      doc["ec"]          = condCal / 1000.0;
+      doc["ec"]          = condCal;          // satuan final µS/cm (node-standard)
       doc["ph"]          = phCal;
       doc["nitrogen"]    = nCal;
       doc["phosphorus"]  = pCal;
@@ -1924,6 +2112,15 @@ void loop() {
     }
     lastLoraStatus = loraTerhubung;
 
+    // Sensor gak ditancap (pH di udara, raw < 5) -> SEMUA nilai sensor jadi 0
+    // biar data SD/BLE/LoRa/LCD konsisten (waktu & metadata node tetap).
+    bool phDiUdara = (rawPH < 5);
+    if (phDiUdara) {
+      tempCal = 0; humiCal = 0;
+      condCal = 0;
+      phCal = 0; nCal = 0; pCal = 0; kCal = 0;
+      Serial.println(F("[SENSOR] Tidak ditancap tanah -> semua nilai sensor = 0"));
+    }
     tampilkanDataLCD(phCal, tempCal, humiCal, nCal, pCal, kCal, condCal);
 
     unsigned long displayStart = millis();
