@@ -27,59 +27,62 @@ class SensorData {
 
   double get npkAverage => (nitrogen + phosphorus + kalium) / 3;
 
+  // Plant Health Score (0-100) berbasis ambang agronomi sawah padi
+  // (FAO / IRRI Dobermann & Fairhurst 2000 / UC Davis / Maas & Hoffman EC).
+  // Bobot: N 25%, P 20%, K 20%, pH 15%, EC 10%, VWC 10%.
   double get plantHealthScore {
     double score = 0;
-    
-    // Nitrogen (Available N): Ideal 70-120 mg/kg, Kritis <25, Toksik >200
-    if (nitrogen >= 70 && nitrogen <= 120) {
+
+    // Nitrogen (Available/Mineral N): defisiensi <20, optimum 20-50, berlebih >80-100
+    if (nitrogen >= 20 && nitrogen <= 50) {
+      score += 25;
+    } else if ((nitrogen >= 10 && nitrogen < 20) || (nitrogen > 50 && nitrogen <= 100)) {
+      score += 12.5;
+    }
+
+    // Phosphorus (Olsen P): defisiensi <6, optimum 10-25, berlebih >40-50
+    if (phosphorus >= 10 && phosphorus <= 25) {
       score += 20;
-    } else if (nitrogen >= 25 && nitrogen <= 200) {
+    } else if ((phosphorus >= 6 && phosphorus < 10) || (phosphorus > 25 && phosphorus <= 50)) {
       score += 10;
     }
-    
-    // Phosphorus (Olsen P): Ideal 15-25 mg/kg, Kritis <10, Berlebih >35
-    if (phosphorus >= 15 && phosphorus <= 25) {
-      score += 15;
-    } else if (phosphorus >= 10 && phosphorus <= 35) {
-      score += 7.5;
-    }
-    
-    // Kalium (Exchangeable K): Ideal 100-200 mg/kg, Kritis <60
+
+    // Kalium (Exchangeable K): defisiensi <60, optimum 100-200, berlebih >300-400
     if (kalium >= 100 && kalium <= 200) {
-      score += 15;
-    } else if (kalium >= 60 && kalium <= 300) {
-      score += 7.5;
-    }
-    
-    // Kelembapan (VWC): Ideal 40-60%, Kritis <20%
-    if (humidity >= 40 && humidity <= 60) {
-      score += 15;
-    } else if (humidity >= 20 && humidity <= 80) {
-      score += 7.5;
-    }
-    
-    // pH Tanah: Ideal 5.5-7.0, Kritis <5.0 atau >7.5
-    if (ph >= 5.5 && ph <= 7.0) {
       score += 20;
-    } else if (ph >= 5.0 && ph <= 7.5) {
+    } else if ((kalium >= 60 && kalium < 100) || (kalium > 200 && kalium <= 300)) {
       score += 10;
     }
-    
-    // EC (Salinitas): Ideal <2.0 mS/cm, Kritis >3.0 mS/cm
-    if (ec <= 2.0) {
+
+    // Kelembapan/VWC: kering <20%, optimum 30-45%, becek >55%
+    if (humidity >= 30 && humidity <= 45) {
+      score += 10;
+    } else if ((humidity >= 20 && humidity < 30) || (humidity > 45 && humidity <= 55)) {
+      score += 5;
+    }
+
+    // pH Tanah: asam kuat <5.0, optimum 5.5-7.0, alkalin >7.5
+    if (ph >= 5.5 && ph <= 7.0) {
       score += 15;
-    } else if (ec <= 3.0) {
+    } else if (ph >= 5.0 && ph <= 7.5) {
       score += 7.5;
     }
-    
+
+    // EC (Salinitas, µS/cm): aman <200, stres 400-1000, parah >1000
+    if (ec <= 200) {
+      score += 10;
+    } else if (ec <= 400) {
+      score += 5;
+    }
+
     return score;
   }
 
   String get healthStatus {
     final s = plantHealthScore;
-    if (s >= 85) return 'Excellent';
-    if (s >= 65) return 'Good';
-    if (s >= 45) return 'Fair';
+    if (s >= 80) return 'Excellent';
+    if (s >= 60) return 'Good';
+    if (s >= 40) return 'Fair';
     return 'Poor';
   }
 
@@ -105,7 +108,7 @@ class SensorData {
         temperature: bsd.suhu,
         humidity: bsd.humi,
         ph: bsd.ph,
-        ec: bsd.kond,  // Gateway already sends EC in mS/cm (divided by 1000)
+        ec: bsd.kond,  // EC sudah dalam satuan final µS/cm (node & gateway konsisten)
         modeHemat: bsd.modeHemat,
         status: bsd.status,
         timestamp: _parseTimestamp(bsd.tanggal, bsd.waktu),

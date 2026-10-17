@@ -68,7 +68,7 @@ Current sensor readings:
 - Nitrogen (Available N): ${data.nitrogen.toStringAsFixed(1)} mg/kg (ideal: 70-120 mg/kg)
 - Phosphorus (Olsen P): ${data.phosphorus.toStringAsFixed(1)} mg/kg (ideal: 15-25 mg/kg)
 - Kalium (Exchangeable K): ${data.kalium.toStringAsFixed(1)} mg/kg (ideal: 100-200 mg/kg)
-- EC: ${data.ec.toStringAsFixed(2)} mS/cm (ideal: <2.0 mS/cm)
+- EC: ${data.ec.toStringAsFixed(0)} µS/cm (ideal: <2000 µS/cm)
 - Kelembapan (VWC): ${data.humidity.toStringAsFixed(1)}% (ideal: 40-60%)
 - pH: ${data.ph.toStringAsFixed(1)} (ideal: 5.5-7.0)
 - Plant Health Score: ${data.plantHealthScore.toStringAsFixed(0)}/100
@@ -255,13 +255,13 @@ B. GATEWAY (ESP32)
 - SILENT WAKE & SMART HISTORY SYNC: Node dan Gateway sama-sama memiliki SD Card. Jika Aplikasi HP terhubung ke Gateway dan meminta history ("H"), Gateway akan merespons super cepat menggunakan SD Card lokalnya. Setelah selesai, Gateway akan mengirim sinyal WAKE dan "FORCE_READ" via LoRa ke Node agar Node terbangun dan mengambil 1 data sensor terbaru secara seketika. Node juga bisa melayani sinkronisasi mandiri jika HP terhubung langsung kepadanya.
 - KALIBRASI & FAIL-SAFE: Offset Kalium CAL_K_OFFSET = -700.0. Watchdog Timer 30 detik. Error Modbus 0x0E timeout 5x beruntun = ESP.restart(). RTC gagal = fallback esp_timer_get_time().
 
-4. STANDAR AGRONOMI PASCABANJIR (REFERENSI ILMIAH TERVALIDASI):
-- Nitrogen (Available N): Ideal 70-120 mg/kg. Kritis <20-25 mg/kg (defisiensi). Kehilangan N pascabanjir dominan lewat denitrifikasi.
-- Fosfor (Olsen P): Ideal 15-25 mg/kg. Kritis <10 ppm. P sementara naik saat tergenang, tapi terkunci saat kering.
+4. STANDAR AGRONOMI PASCABANJIR (REFERENSI ILMIAH TERVALIDASI - FAO/IRRI/UC Davis):
+- Nitrogen (Available N / Mineral N): Ideal 20-50 mg/kg. Kritis <20 mg/kg (defisiensi), berlebih >80-100 mg/kg (risiko lodging & kehilangan N).
+- Fosfor (Olsen P): Ideal 10-25 mg/kg. Kritis <6 mg/kg (defisiensi). Tidak toksik tapi tidak responsif >40-50 mg/kg.
 - Kalium (Exchangeable K): Ideal 100-200 mg/kg. Kritis <60 mg/kg. Sangat rentan pencucian (leaching), butuh monitoring ekstra.
-- pH Tanah: Ideal 5.5-7.0. Konvergen ke 6.5-7.0 saat tergenang, tapi bisa drop tajam (tanah sulfat masam) saat surut.
-- EC (Salinitas): Ideal <2.0 dS/m. Kritis >3.0 dS/m. Tergantung apakah air banjir payau atau tawar.
-- Kelembapan (VWC): Ideal 40-60%. Kritis <20% atau jenuh >60% (anaerob, asam organik).
+- pH Tanah: Ideal 5.5-7.0. Konvergen ke 6.0-6.5 saat tergenang, tapi bisa drop tajam (tanah sulfat masam) saat surut.
+- EC (Salinitas, satuan µS/cm): Ideal <200 µS/cm. Kritis >400 µS/cm (stres), >1000 µS/cm (parah). Tergantung apakah air banjir payau atau tawar.
+- Kelembapan (VWC): Ideal 30-45%. Kritis <20% (kekeringan) atau >55% (tergenang berlebih, anaerob, asam organik).
 - Suhu Tanah: Ideal 25-32 °C. Kritis <15 °C atau >35 °C. Panas mempercepat kehilangan N.
 - Fe2+ (Besi Terlarut): Walau mungkin tidak terukur langsung di NPK, ingat bahwa kondisi anaerobik memicu lonjakan Fe2+ toksik (>300 ppm) pascabanjir.
 
@@ -305,7 +305,7 @@ PERAN ANDA SAAT MENJAWAB:
 - Nitrogen: ${currentData.nitrogen.toStringAsFixed(1)} mg/kg (ideal: 70-120 mg/kg)
 - Phosphorus: ${currentData.phosphorus.toStringAsFixed(1)} mg/kg (ideal: 15-25 mg/kg)
 - Kalium: ${currentData.kalium.toStringAsFixed(1)} mg/kg (ideal: 100-200 mg/kg)
-- EC (Konduktivitas): ${currentData.ec.toStringAsFixed(2)} mS/cm (ideal: <2.0 mS/cm)
+- EC (Konduktivitas): ${currentData.ec.toStringAsFixed(0)} µS/cm (ideal: <2000 µS/cm)
 - Kelembapan: ${currentData.humidity.toStringAsFixed(1)}% (ideal: 40-60%)
 - pH: ${currentData.ph.toStringAsFixed(1)} (ideal: 5.5-7.0)
 - Skor Kesehatan Tanaman: ${currentData.plantHealthScore.toStringAsFixed(0)}/100 (${currentData.healthStatus})

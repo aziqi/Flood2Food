@@ -231,12 +231,12 @@ class AiTaskService {
 
   static List<DailyTask> _ecBasedTasks(SensorData data) {
     final tasks = <DailyTask>[];
-    if (data.ec > 2.5) {
+    if (data.ec > 2500) {
       tasks.add(
         DailyTask(
           id: _randId('ec_high'),
           title: 'Flushing Garam (Leaching)',
-          description: 'EC tanah tinggi (${data.ec.toStringAsFixed(2)} mS/cm). Lakukan pembilasan menggunakan 100 liter air per petak. Pastikan air mengalir keluar lahan.',
+          description: 'EC tanah tinggi (${data.ec.toStringAsFixed(0)} µS/cm). Lakukan pembilasan menggunakan 100 liter air per petak. Pastikan air mengalir keluar lahan.',
           category: TaskCategory.soilCheck,
           difficulty: TaskDifficulty.hard,
           xpReward: 40,
@@ -244,12 +244,12 @@ class AiTaskService {
           aiReason: 'Nilai EC tinggi menandakan penumpukan sisa pupuk kimia beracun. Harus dicuci agar akar bisa bernapas.',
         )
       );
-    } else if (data.ec < 0.3) {
+    } else if (data.ec < 300) {
       final templates = [
         DailyTask(
           id: _randId('ec_low'),
           title: 'Injeksi Nutrisi Lengkap (POC)',
-          description: 'EC sangat rendah (${data.ec.toStringAsFixed(2)} mS/cm) artinya tanah "kosong". Kocor 250ml Pupuk Organik Cair (POC) pada area akar terpusat.',
+          description: 'EC sangat rendah (${data.ec.toStringAsFixed(0)} µS/cm) artinya tanah "kosong". Kocor 250ml Pupuk Organik Cair (POC) pada area akar terpusat.',
           category: TaskCategory.fertilizing,
           difficulty: TaskDifficulty.medium,
           xpReward: 35,
@@ -264,7 +264,7 @@ class AiTaskService {
           difficulty: TaskDifficulty.medium,
           xpReward: 30,
           pointReward: 15,
-          aiReason: 'Daya hantar listrik (EC) ${data.ec.toStringAsFixed(2)} mS/cm menunjukkan tanah kehilangan banyak mineral terlarut.',
+          aiReason: 'Daya hantar listrik (EC) ${data.ec.toStringAsFixed(0)} µS/cm menunjukkan tanah kehilangan banyak mineral terlarut.',
         ),
       ];
       tasks.add(templates[_random.nextInt(templates.length)]);
