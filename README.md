@@ -9,7 +9,6 @@
   [![Flutter](https://img.shields.io/badge/Companion_App-Flutter_3.x-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev/)
   [![Firmware](https://img.shields.io/badge/Firmware-ESP32_C%2B%2B-00599C?style=for-the-badge&logo=espressif)](https://www.espressif.com/)
   [![LoRa](https://img.shields.io/badge/Telemetry-LoRa_Ebyte_E220-EA4335?style=for-the-badge)]()
-  [![AI Engine](https://img.shields.io/badge/AI_Engine-Gemini_%2F_NIM_%2F_Local-4285F4?style=for-the-badge&logo=google-gemini)]()
   [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
   <p align="center">
