@@ -396,6 +396,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = colorScheme.brightness == Brightness.dark;
+
     return Scaffold(
       drawer: const AppDrawer(),
       endDrawer: _buildHistoryDrawer(),
@@ -591,14 +594,10 @@ class _ChatScreenState extends State<ChatScreen> {
                               color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                             ),
                             blockquotePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            tableBorder: TableBorder(
-                              horizontalInside: BorderSide(color: colorScheme.onSurface.withValues(alpha: 0.1), width: 1),
-                              bottom: BorderSide(color: colorScheme.onSurface.withValues(alpha: 0.1), width: 1),
-                              top: BorderSide(color: colorScheme.onSurface.withValues(alpha: 0.1), width: 1),
-                            ),
-                            tableCellsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            tableHead: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
-                            tableBody: TextStyle(color: colorScheme.onSurface),
+                            tableBorder: TableBorder.all(color: colorScheme.onSurface.withValues(alpha: 0.3), width: 1),
+                            tableCellsPadding: const EdgeInsets.all(8),
+                            tableHead: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface, fontSize: 14),
+                            tableBody: TextStyle(color: colorScheme.onSurface, fontSize: 14),
                             // Inline code styles (fallback if not handled by builder, though builder handles 'code')
                             code: TextStyle(
                               backgroundColor: colorScheme.onSurface.withValues(alpha: 0.1),
@@ -985,4 +984,3 @@ class CodeElementBuilder extends MarkdownElementBuilder {
     );
   }
 }
-

@@ -17,7 +17,9 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignInAccount? googleUser = await GoogleSignIn(
+        serverClientId: '596841605539-ebj7tiqp2e2mrqkb0p092ld5853j77h9.apps.googleusercontent.com',
+      ).signIn();
       if (googleUser == null) {
         setState(() => _isLoading = false);
         return; // Pengguna membatalkan login
