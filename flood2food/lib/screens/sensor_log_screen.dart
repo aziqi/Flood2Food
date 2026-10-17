@@ -421,7 +421,7 @@ class _SensorLogScreenState extends State<SensorLogScreen> {
                 '${log.humidity.toStringAsFixed(1)}%'),
             _sensorRow(Icons.science, 'pH', log.ph.toStringAsFixed(2)),
             _sensorRow(
-                Icons.flash_on, 'EC', '${log.ec.toStringAsFixed(2)} mS/cm'),
+                Icons.flash_on, 'EC', '${log.ec.toStringAsFixed(0)} µS/cm'),
             _sensorRow(Icons.grass, 'N',
                 '${log.nitrogen.toStringAsFixed(1)} mg/kg'),
             _sensorRow(

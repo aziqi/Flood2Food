@@ -118,7 +118,7 @@ class DashboardScreen extends StatelessWidget {
                       const SensorBlockCard(label: 'Phosphorus', parameter: 'P', unit: 'mg/kg', minValue: 0, maxValue: 80, color: Color(0xFFFF9800), icon: Icons.bolt_rounded),
                       const SensorBlockCard(label: 'Kalium', parameter: 'K', unit: 'mg/kg', minValue: 0, maxValue: 80, color: Color(0xFF9C27B0), icon: Icons.water_rounded),
                       const SensorBlockCard(label: 'pH', parameter: 'pH', unit: '', minValue: 0, maxValue: 14, color: Color(0xFF4CAF50), icon: Icons.invert_colors_rounded),
-                      const SensorBlockCard(label: 'EC', parameter: 'EC', unit: 'mS/cm', minValue: 0, maxValue: 3.0, color: Color(0xFF2196F3), icon: Icons.flash_on_rounded),
+                      const SensorBlockCard(label: 'EC', parameter: 'EC', unit: 'µS/cm', minValue: 0, maxValue: 3000, color: Color(0xFF2196F3), icon: Icons.flash_on_rounded),
                       
                       const SizedBox(height: 32),
                       _sectionHeader('Daily Tasks', Icons.task_alt_rounded),

@@ -67,7 +67,7 @@ class SensorLogService {
     final logs = await loadLog();
     if (logs.isEmpty) return;
 
-    String csv = "Timestamp,Temperature,Humidity,pH,EC(mS/cm),Nitrogen,Phosphorus,Kalium\n";
+    String csv = "Timestamp,Temperature,Humidity,pH,EC(uS/cm),Nitrogen,Phosphorus,Kalium\n";
 
     for (var log in logs) {
       csv += "${log.timestamp.toIso8601String()},"

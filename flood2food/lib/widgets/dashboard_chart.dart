@@ -45,7 +45,7 @@ class DashboardChart extends StatelessWidget {
       case 'pH':
         return '';
       case 'EC':
-        return ' mS/cm';
+        return ' µS/cm';
       case 'Temperature':
         return ' °C';
       case 'Humidity':
