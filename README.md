@@ -3,6 +3,7 @@
   # 🌱 Flood2Food (PKM-KC USU 2026)
   ### *Sistem Cerdas Pemulihan Lahan Sawah Pascabanjir Berbasis Industrial IoT, Long-Range Telemetry, dan Gamifikasi Rekomendasi Agronomi AI*
 
+  [![Download APK](https://img.shields.io/badge/Download_APK-v1.0.0_(Android)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/aziqi/Flood2Food/releases/tag/v1.0.0)
   [![Program](https://img.shields.io/badge/Program-PKM--KC_USU_2026-009688?style=for-the-badge&logo=target)]()
   [![PIMNAS](https://img.shields.io/badge/Target-PIMNAS_39-FF6F00?style=for-the-badge&logo=award)]()
   [![Flutter](https://img.shields.io/badge/Companion_App-Flutter_3.x-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev/)
