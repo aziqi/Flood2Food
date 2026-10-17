@@ -32,4 +32,7 @@ build/
 /build/
 *.log
 
-nul
+# Kotlin / Android cache
+.kotlin/
+*.salive
+
