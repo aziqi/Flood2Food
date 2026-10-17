@@ -1,9 +1,5 @@
 <div align="center">
 
-  <img src="flood2food/assets/splash.jpg" width="100%" alt="Flood2Food Banner" style="border-radius: 12px; max-height: 420px; object-fit: cover;" />
-
-  <br/><br/>
-
   # 🌱 Flood2Food (PKM-KC USU 2026)
   ### *Sistem Cerdas Pemulihan Lahan Sawah Pascabanjir Berbasis Industrial IoT, Long-Range Telemetry, dan Gamifikasi Rekomendasi Agronomi AI*
 
