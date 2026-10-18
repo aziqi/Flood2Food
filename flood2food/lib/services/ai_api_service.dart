@@ -19,8 +19,10 @@ class AiApiService {
       );
     }
 
-    final isGemini = taskModel.cloudModelId?.startsWith('gemini-') == true;
-    final isNvidia = taskModel.cloudModelId == 'meta/llama-3.1-8b-instruct' || taskModel.cloudModelId == 'meta/llama-3.3-70b-instruct';
+    final isGemini = taskModel.id.startsWith('cloud_gemini') ||
+        taskModel.id.startsWith('cloud_gemma') ||
+        taskModel.cloudModelId?.startsWith('gemini-') == true;
+    final isNvidia = taskModel.id.startsWith('cloud_nvidia');
 
     if (isGemini) {
       if (!AiApiConfig.isGeminiConfigured) {
@@ -114,14 +116,20 @@ Generate $taskCount farming/maintenance tasks in JSON format based on these read
     } else {
       final url = isNvidia ? AiApiConfig.nvidiaBaseUrl : AiApiConfig.baseUrl;
       final apiKey = isNvidia ? AiApiConfig.nvidiaApiKey : AiApiConfig.apiKey;
-      final defaultModel = isNvidia ? 'meta/llama-3.1-8b-instruct' : AiApiConfig.model;
+      final defaultModel = isNvidia ? 'meta/llama-3.2-11b-vision-instruct' : AiApiConfig.model;
       
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $apiKey',
+      };
+      if (!isNvidia) {
+        headers['HTTP-Referer'] = 'https://flood2food.app';
+        headers['X-Title'] = 'Flood2Food';
+      }
+
       response = await http.post(
         Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $apiKey',
-        },
+        headers: headers,
         body: jsonEncode({
           'model': taskModel.cloudModelId ?? defaultModel,
           'messages': [
@@ -327,8 +335,10 @@ Sebagai pakar, wajib analisis secara mendalam mana dari parameter di atas yang d
     }
 
     // Cloud via OpenRouter atau Gemini atau NVIDIA
-    final isGemini = activeModel.cloudModelId?.startsWith('gemini-') == true;
-    final isNvidia = activeModel.id.startsWith('cloud_nvidia_');
+    final isGemini = activeModel.id.startsWith('cloud_gemini') ||
+        activeModel.id.startsWith('cloud_gemma') ||
+        activeModel.cloudModelId?.startsWith('gemini-') == true;
+    final isNvidia = activeModel.id.startsWith('cloud_nvidia');
     
     http.StreamedResponse response;
 
@@ -375,11 +385,15 @@ Sebagai pakar, wajib analisis secara mendalam mana dari parameter di atas yang d
 
       final url = isNvidia ? AiApiConfig.nvidiaBaseUrl : AiApiConfig.baseUrl;
       final apiKey = isNvidia ? AiApiConfig.nvidiaApiKey : AiApiConfig.apiKey;
-      final defaultModel = isNvidia ? 'meta/llama-3.1-8b-instruct' : AiApiConfig.model;
+      final defaultModel = isNvidia ? 'meta/llama-3.2-11b-vision-instruct' : AiApiConfig.model;
 
       final request = http.Request('POST', Uri.parse(url));
       request.headers['Content-Type'] = 'application/json';
       request.headers['Authorization'] = 'Bearer $apiKey';
+      if (!isNvidia) {
+        request.headers['HTTP-Referer'] = 'https://flood2food.app';
+        request.headers['X-Title'] = 'Flood2Food';
+      }
       request.body = jsonEncode({
         'model': activeModel.cloudModelId ?? defaultModel,
         'messages': messages,
