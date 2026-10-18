@@ -37,3 +37,6 @@ build/
 *.salive
 
 nul
+
+# Firebase Sensitive Config
+**/google-services.json

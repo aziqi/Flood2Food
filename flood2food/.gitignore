@@ -49,3 +49,7 @@ android/.kotlin/
 *.salive
 
 nul
+
+# Firebase Sensitive Config
+/android/app/google-services.json
+google-services.json
