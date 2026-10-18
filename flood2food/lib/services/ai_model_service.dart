@@ -7,130 +7,127 @@ import 'package:flutter/foundation.dart';
 
 class AiModelService {
   static const String _activeModelKey = 'active_ai_model_id_v4';
-  static const String _defaultModelId = 'cloud_gemini_3_5_flash';
+  static const String _defaultModelId = 'cloud_gemini_2_5_flash';
 
   // =========================================================
-  // Daftar Model Cloud - Gratis (Diperbarui)
+  // Daftar Model Cloud - 100% Gratis & Chat-Capable (Terverifikasi)
   // =========================================================
   static const List<AiModel> cloudModels = [
+    // -------------------------------------------------------
+    // Google AI Studio (Free Tier)
+    // -------------------------------------------------------
     AiModel(
       id: 'cloud_gemini_2_5_flash',
       name: 'Google Gemini 2.5 Flash',
-      description: 'Model super cepat dan pintar dari Google AI Studio.',
+      description: 'Model resmi Google AI Studio yang super cepat, stabil, dan responsif.',
       type: AiModelType.cloud,
       cloudModelId: 'gemini-2.5-flash',
     ),
     AiModel(
-      id: 'cloud_gemini_2_5_pro',
-      name: 'Google Gemini 2.5 Pro',
-      description: 'Model flagship Google untuk reasoning tingkat lanjut.',
-      type: AiModelType.cloud,
-      cloudModelId: 'gemini-2.5-pro',
-    ),
-    AiModel(
-      id: 'cloud_gemini_3_flash_preview',
-      name: 'Google Gemini 3 Flash Preview',
-      description: 'Preview untuk generasi Gemini 3 Flash.',
-      type: AiModelType.cloud,
-      cloudModelId: 'gemini-3-flash-preview',
-    ),
-    AiModel(
-      id: 'cloud_gemini_3_1_flash_lite',
-      name: 'Google Gemini 3.1 Flash Lite',
-      description: 'Generasi terbaru Gemini 3.1 untuk versi ringan.',
-      type: AiModelType.cloud,
-      cloudModelId: 'gemini-3.1-flash-lite',
-    ),
-    AiModel(
-      id: 'cloud_gemini_3_1_pro_preview',
-      name: 'Google Gemini 3.1 Pro Preview',
-      description: 'Generasi terbaru Gemini 3.1 Pro.',
-      type: AiModelType.cloud,
-      cloudModelId: 'gemini-3.1-pro-preview',
-    ),
-    AiModel(
       id: 'cloud_gemini_3_5_flash',
       name: 'Google Gemini 3.5 Flash',
-      description: 'Model revolusioner Gemini 3.5 Flash.',
+      description: 'Generasi terbaru Gemini 3.5 Flash untuk penalaran tinggi.',
       type: AiModelType.cloud,
       cloudModelId: 'gemini-3.5-flash',
     ),
     AiModel(
-      id: 'cloud_gemma_4_31b_it',
-      name: 'Google Gemma 4 31B IT',
-      description: 'Model open-weight generasi 4 dari Google.',
+      id: 'cloud_gemini_3_1_flash_lite',
+      name: 'Google Gemini 3.1 Flash Lite',
+      description: 'Model efisien dan hemat kuota dengan latensi sangat rendah.',
       type: AiModelType.cloud,
-      cloudModelId: 'gemma-4-31b-it',
+      cloudModelId: 'gemini-3.1-flash-lite',
     ),
     AiModel(
-      id: 'cloud_nvidia_llama_3_1_8b',
-      name: 'Meta Llama 3.1 8B (NVIDIA)',
-      description: 'Akselerasi inferensi super cepat menggunakan server NVIDIA NIM.',
+      id: 'cloud_gemini_3_flash_preview',
+      name: 'Google Gemini 3 Flash Preview',
+      description: 'Preview generasi Gemini 3 Flash dari Google.',
       type: AiModelType.cloud,
-      cloudModelId: 'meta/llama-3.1-8b-instruct',
+      cloudModelId: 'gemini-3-flash-preview',
     ),
     AiModel(
-      id: 'cloud_nvidia_llama_3_1_70b',
-      name: 'Meta Llama 3.1 70B (NVIDIA)',
-      description: 'Model Llama 3.1 kelas berat untuk pemrosesan rumit.',
+      id: 'cloud_gemini_flash_latest',
+      name: 'Google Gemini Flash Latest',
+      description: 'Alias dinamis yang selalu mengarah ke versi Flash paling mutakhir.',
       type: AiModelType.cloud,
-      cloudModelId: 'meta/llama-3.1-70b-instruct',
+      cloudModelId: 'gemini-flash-latest',
     ),
     AiModel(
-      id: 'cloud_nvidia_llama_3_3_70b',
-      name: 'Meta Llama 3.3 70B (NVIDIA)',
-      description: 'Model open-weight kelas berat dari Meta via NVIDIA NIM.',
+      id: 'cloud_gemma_4_26b_a4b_it',
+      name: 'Google Gemma 4 26B A4B IT',
+      description: 'Model open-weight generasi 4 instruksi buatan Google.',
       type: AiModelType.cloud,
-      cloudModelId: 'meta/llama-3.3-70b-instruct',
+      cloudModelId: 'gemma-4-26b-a4b-it',
+    ),
+
+    // -------------------------------------------------------
+    // NVIDIA NIM (Developer Free Tier)
+    // -------------------------------------------------------
+    AiModel(
+      id: 'cloud_nvidia_llama_3_2_11b_vision',
+      name: 'Meta Llama 3.2 11B Vision (NVIDIA)',
+      description: 'Model multimodal vision dan teks canggih dari Meta via akselerasi NVIDIA NIM.',
+      type: AiModelType.cloud,
+      cloudModelId: 'meta/llama-3.2-11b-vision-instruct',
     ),
     AiModel(
-      id: 'cloud_nvidia_mixtral_8x7b',
-      name: 'Mixtral 8x7B (NVIDIA)',
-      description: 'Model Mixture of Experts (MoE) 8x7B yang sangat cepat.',
-      type: AiModelType.cloud,
-      cloudModelId: 'mistralai/mixtral-8x7b-instruct-v0.1',
-    ),
-    AiModel(
-      id: 'cloud_nvidia_nemotron_3_ultra_550b_a55b',
-      name: 'Nemotron 3 Ultra 550B A55B (NVIDIA)',
-      description: 'Model super masif 550B buatan NVIDIA.',
+      id: 'cloud_nvidia_nemotron_3_ultra_550b',
+      name: 'Nemotron 3 Ultra 550B (NVIDIA)',
+      description: 'Model super masif 550B buatan NVIDIA untuk analisis mendalam.',
       type: AiModelType.cloud,
       cloudModelId: 'nvidia/nemotron-3-ultra-550b-a55b',
     ),
     AiModel(
-      id: 'cloud_nvidia_deepseek_v4_flash',
-      name: 'DeepSeek V4 Flash (NVIDIA)',
-      description: 'Model canggih dari DeepSeek V4.',
+      id: 'cloud_nvidia_nemotron_3_nano_omni',
+      name: 'Nemotron 3 Nano Omni 30B (NVIDIA)',
+      description: 'Model reasoning dan penalaran cerdas berkecepatan tinggi dari NVIDIA.',
       type: AiModelType.cloud,
-      cloudModelId: 'deepseek-ai/deepseek-v4-flash',
+      cloudModelId: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
     ),
-    AiModel(
-      id: 'cloud_nvidia_deepseek_v4_pro',
-      name: 'DeepSeek V4 Pro (NVIDIA)',
-      description: 'Model canggih dari DeepSeek V4 Pro untuk penalaran berat.',
-      type: AiModelType.cloud,
-      cloudModelId: 'deepseek-ai/deepseek-v4-pro',
-    ),
-    AiModel(
-      id: 'cloud_nvidia_glm_5_2',
-      name: 'GLM 5.2 (NVIDIA)',
-      description: 'Model canggih dari Zhipu AI.',
-      type: AiModelType.cloud,
-      cloudModelId: 'z-ai/glm-5.2',
-    ),
-    AiModel(
-      id: 'cloud_nvidia_minimax_m3',
-      name: 'MiniMax M3 (NVIDIA)',
-      description: 'Model canggih dari MiniMax AI.',
-      type: AiModelType.cloud,
-      cloudModelId: 'minimaxai/minimax-m3',
-    ),
+
+    // -------------------------------------------------------
+    // OpenRouter (100% Free / :free)
+    // -------------------------------------------------------
     AiModel(
       id: 'cloud_openrouter_free',
       name: 'Auto (Model Gratis Terbaik)',
       description: 'Otomatis memilih model gratis terbaik yang tersedia saat ini di OpenRouter.',
       type: AiModelType.cloud,
       cloudModelId: 'openrouter/free',
+    ),
+    AiModel(
+      id: 'cloud_openrouter_gemma_4_31b_free',
+      name: 'Google Gemma 4 31B (OpenRouter Free)',
+      description: 'Model open-weight 31B generasi terbaru dari Google gratis di OpenRouter.',
+      type: AiModelType.cloud,
+      cloudModelId: 'google/gemma-4-31b-it:free',
+    ),
+    AiModel(
+      id: 'cloud_openrouter_nemotron_ultra_free',
+      name: 'Nemotron 3 Ultra 550B (OpenRouter Free)',
+      description: 'Model 550B super masif dari NVIDIA gratis di OpenRouter.',
+      type: AiModelType.cloud,
+      cloudModelId: 'nvidia/nemotron-3-ultra-550b-a55b:free',
+    ),
+    AiModel(
+      id: 'cloud_openrouter_nemotron_super_free',
+      name: 'Nemotron 3 Super 120B (OpenRouter Free)',
+      description: 'Model 120B berkecepatan tinggi dari NVIDIA gratis di OpenRouter.',
+      type: AiModelType.cloud,
+      cloudModelId: 'nvidia/nemotron-3-super-120b-a12b:free',
+    ),
+    AiModel(
+      id: 'cloud_openrouter_nemotron_super_vl_free',
+      name: 'Nemotron 3.5 Super VL (OpenRouter Free)',
+      description: 'Model multimodal 3.5 Super VL gratis di OpenRouter.',
+      type: AiModelType.cloud,
+      cloudModelId: 'nvidia/nemotron-3.5-super-vl:free',
+    ),
+    AiModel(
+      id: 'cloud_openrouter_liquid_lfm_free',
+      name: 'LiquidAI LFM 2.5 2.6B (OpenRouter Free)',
+      description: 'Model efisien dan ringan buatan Liquid AI gratis di OpenRouter.',
+      type: AiModelType.cloud,
+      cloudModelId: 'liquid/lfm-2.5-2.6b:free',
     ),
   ];
 
