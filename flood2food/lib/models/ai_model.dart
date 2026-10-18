@@ -25,8 +25,10 @@ class AiModel {
 
   String get providerName {
     if (type == AiModelType.local) return 'Lokal (Perangkat)';
-    if (cloudModelId?.startsWith('gemini-') == true) return 'Google AI Studio';
-    if (cloudModelId == 'meta/llama-3.1-8b-instruct' || cloudModelId == 'meta/llama-3.3-70b-instruct') return 'NVIDIA NIM';
+    if (id.startsWith('cloud_gemini') || id.startsWith('cloud_gemma') || cloudModelId?.startsWith('gemini-') == true) {
+      return 'Google AI Studio';
+    }
+    if (id.startsWith('cloud_nvidia')) return 'NVIDIA NIM';
     return 'OpenRouter';
   }
 
