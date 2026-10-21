@@ -78,7 +78,7 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
         dailyTasks: tasks,
         lastGeneratedDate: today,
         isGenerating: false,
-        error: 'Gagal memuat dari AI. Menggunakan tugas lokal.',
+        error: null,
       ));
     }
   }

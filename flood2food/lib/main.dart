@@ -18,7 +18,11 @@ late final ValueNotifier<ThemeMode> appThemeMode;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint('Firebase init fallback: $e');
+  }
 
   await initializeDateFormatting();
   await dotenv.load(fileName: '.env');
@@ -35,6 +39,51 @@ void main() async {
         .toList();
   }
 
+  if (storedTasks.isEmpty) {
+    storedTasks = [
+      DailyTask(
+        id: 'task_demo_1',
+        title: 'Aplikasi Urea Cepat Larut',
+        description: 'Kadar N perlu disuplai. Taburkan 35 gram Urea per meter persegi di petak sawah B.',
+        category: TaskCategory.fertilizing,
+        difficulty: TaskDifficulty.medium,
+        xpReward: 35,
+        pointReward: 15,
+        aiReason: 'Nitrogen tanah butuh dorongan vegetatif pasca genangan air.',
+      ),
+      DailyTask(
+        id: 'task_demo_2',
+        title: 'Pengaturan Saluran Drainase',
+        description: 'Pertahankan tinggi genangan air 3-5 cm agar sirkulasi oksigen perakaran optimal.',
+        category: TaskCategory.watering,
+        difficulty: TaskDifficulty.easy,
+        xpReward: 25,
+        pointReward: 10,
+        aiReason: 'Sirkulasi air mencegah pembusukan akar pada tanaman padi muda.',
+      ),
+      DailyTask(
+        id: 'task_demo_3',
+        title: 'Inspeksi Titik Sensor Node 1',
+        description: 'Pastikan probe stainless steel NPK tertancap kokoh 10 cm di kedalaman tanah.',
+        category: TaskCategory.general,
+        difficulty: TaskDifficulty.easy,
+        xpReward: 20,
+        pointReward: 10,
+        aiReason: 'Menjaga akurasi pembacaan telemetri real-time LoRa/BLE.',
+      ),
+      DailyTask(
+        id: 'task_demo_4',
+        title: 'Aplikasi Pupuk Silika Daun',
+        description: 'Semprot larutan silika cair di pagi hari untuk memperkuat batang tanaman.',
+        category: TaskCategory.fertilizing,
+        difficulty: TaskDifficulty.hard,
+        xpReward: 45,
+        pointReward: 20,
+        aiReason: 'Silika meningkatkan ketahanan mekanis tanaman terhadap hembusan angin kencang.',
+      ),
+    ];
+  }
+
   final profileJson = prefs.getString('stored_profile');
   UserProfile? storedProfile;
   if (profileJson != null) {
@@ -46,6 +95,17 @@ void main() async {
       debugPrint('Gagal memuat profil: $e');
     }
   }
+
+  storedProfile ??= const UserProfile(
+    name: 'Budi Santoso',
+    level: 7,
+    currentXp: 380,
+    xpToNextLevel: 500,
+    streakDays: 14,
+    totalTasksCompleted: 42,
+    totalPoints: 1250,
+    badges: ['Pemupuk Handal', 'Penjaga NPK', 'Detektif pH', 'Pahlawan Pangan', 'IoT Master'],
+  );
 
   // Load saved theme (default to dark for the premium feel)
   final savedTheme = prefs.getString('theme_mode');

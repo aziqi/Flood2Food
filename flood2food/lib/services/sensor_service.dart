@@ -10,6 +10,7 @@ class SensorService {
   int _currentIndex = 0;
 
   Stream<SensorData> get sensorStream => _controller.stream;
+  List<SensorData>? get csvData => _csvData;
 
   Future<void> loadCsvData() async {
     if (_csvData != null) return;

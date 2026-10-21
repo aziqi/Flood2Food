@@ -33,7 +33,13 @@ class _SensorLogScreenState extends State<SensorLogScreen> {
 
   Future<void> _loadLogs() async {
     setState(() => _loading = true);
-    final logs = await _logService.loadLog();
+    var logs = await _logService.loadLog();
+    if (logs.isEmpty && mounted) {
+      final blocState = context.read<SensorBloc>().state;
+      if (blocState.history.isNotEmpty) {
+        logs = blocState.history;
+      }
+    }
     setState(() {
       _allLogs = logs.reversed.toList();
       _applyFilter();

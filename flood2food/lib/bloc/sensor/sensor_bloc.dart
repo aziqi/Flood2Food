@@ -59,8 +59,16 @@ class SensorBloc extends Bloc<SensorEvent, SensorState> {
     final localLogs = await _logService.loadLog();
     
     // 3. Gunakan Cloud jika ada, jika kosong gunakan Lokal
-    final logs = cloudLogs.isNotEmpty ? cloudLogs : localLogs;
+    var logs = cloudLogs.isNotEmpty ? cloudLogs : localLogs;
     
+    // 4. Jika masih kosong, gunakan data CSV agar telemetri langsung berbobot
+    if (logs.isEmpty) {
+      await _sensorService.loadCsvData();
+      if (_sensorService.csvData != null && _sensorService.csvData!.isNotEmpty) {
+        logs = _sensorService.csvData!;
+      }
+    }
+
     if (logs.isNotEmpty) {
       emit(SensorDisconnected(latestData: logs.last, history: logs));
     }
