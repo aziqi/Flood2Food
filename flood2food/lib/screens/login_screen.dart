@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/sensor/sensor_bloc.dart';
+import '../bloc/sensor/sensor_event.dart';
 import 'main_shell.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -44,6 +47,15 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(content: Text('Gagal login: $e')),
       );
     }
+  }
+
+  void _enterDemoMode() {
+    context.read<SensorBloc>().add(ConnectSensor());
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const MainShell()),
+    );
   }
 
   @override
@@ -128,6 +140,32 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ).animate().fade(delay: 600.ms).slideY(begin: 0.5, curve: Curves.easeOut),
+              
+              const SizedBox(height: 16),
+              
+              // Tombol Mode Demo
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: OutlinedButton.icon(
+                  onPressed: _enterDemoMode,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.greenAccent,
+                    side: const BorderSide(color: Colors.greenAccent, width: 1.5),
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  icon: const Icon(Icons.rocket_launch_rounded, color: Colors.greenAccent),
+                  label: const Text(
+                    'Jelajahi Mode Demo (Eksplorasi Lengkap)',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ).animate().fade(delay: 700.ms).slideY(begin: 0.5, curve: Curves.easeOut),
             ],
           ),
         ),
