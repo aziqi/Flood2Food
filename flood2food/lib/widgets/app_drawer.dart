@@ -17,7 +17,10 @@ class AppDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final profile = context.watch<GamificationBloc>().state.profile;
     final colorScheme = Theme.of(context).colorScheme;
-    final user = FirebaseAuth.instance.currentUser;
+    User? user;
+    try {
+      user = FirebaseAuth.instance.currentUser;
+    } catch (_) {}
 
     return Drawer(
       backgroundColor: colorScheme.surface,

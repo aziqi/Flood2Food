@@ -528,8 +528,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pop(ctx);
               
               // 2. Logout dari Google dan Firebase
-              await GoogleSignIn().signOut();
-              await FirebaseAuth.instance.signOut();
+              try {
+                await GoogleSignIn().signOut();
+                await FirebaseAuth.instance.signOut();
+              } catch (_) {}
               
               if (!context.mounted) return;
               

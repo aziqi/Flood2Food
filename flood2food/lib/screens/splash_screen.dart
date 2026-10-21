@@ -18,7 +18,10 @@ class _SplashScreenState extends State<SplashScreen>
 
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
-        final user = FirebaseAuth.instance.currentUser;
+        User? user;
+        try {
+          user = FirebaseAuth.instance.currentUser;
+        } catch (_) {}
         if (user == null) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const LoginScreen()),

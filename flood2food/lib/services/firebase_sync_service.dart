@@ -6,10 +6,15 @@ import '../models/sensor_data.dart';
 import 'package:flutter/foundation.dart';
 
 class FirebaseSyncService {
-  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  static final FirebaseAuth _auth = FirebaseAuth.instance;
+  static FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
-  static String? get _userId => _auth.currentUser?.uid;
+  static String? get _userId {
+    try {
+      return FirebaseAuth.instance.currentUser?.uid;
+    } catch (_) {
+      return null;
+    }
+  }
 
   // Sinkronisasi Profil Pengguna
   static Future<void> syncUserProfile(UserProfile profile) async {

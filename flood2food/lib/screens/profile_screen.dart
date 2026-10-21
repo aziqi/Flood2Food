@@ -46,7 +46,10 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildLevelCard(BuildContext context, int level, double progress, ColorScheme colorScheme, UserProfile profile) {
     final isDark = colorScheme.brightness == Brightness.dark;
-    final user = FirebaseAuth.instance.currentUser;
+    User? user;
+    try {
+      user = FirebaseAuth.instance.currentUser;
+    } catch (_) {}
     
     return Container(
       padding: const EdgeInsets.all(32),
