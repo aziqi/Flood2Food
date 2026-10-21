@@ -10,7 +10,7 @@
   [![Flutter](https://img.shields.io/badge/Companion_App-Flutter_3.x-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev/)
   [![Firmware](https://img.shields.io/badge/Firmware-ESP32_C%2B%2B-00599C?style=for-the-badge&logo=espressif)](https://www.espressif.com/)
   [![LoRa](https://img.shields.io/badge/Telemetry-LoRa_Ebyte_E220-EA4335?style=for-the-badge)]()
-  [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+  [![License](https://img.shields.io/badge/License-Proprietary%20%2F%20Evaluation%20Only-red?style=for-the-badge)](LICENSE)
 
   <p align="center">
     <b>Inovasi Kolaboratif Mahasiswa Lintas Disiplin Ilmu Universitas Sumatera Utara</b><br/>
@@ -282,9 +282,9 @@ Program riset dan implementasi teknologi ini didanai dan didukung secara penuh o
 
 ---
 
-## 📄 Lisensi & Hak Cipta
+## Lisensi
 
-Hak Cipta © 2026 **Tim Peneliti Flood2Food Universitas Sumatera Utara**. Seluruh kode sumber, skema rangkaian, dan dokumentasi ini dilisensikan di bawah naungan [MIT License](LICENSE). Anda dipersilakan untuk memodifikasi, mendistribusikan, dan mengembangkan lebih lanjut dengan tetap menyertakan atribusi resmi kepada tim peneliti.
+Hak Cipta (c) 2026 Aziqi Arifian Dova (Flood2Food Team). Seluruh hak cipta dilindungi undang-undang. Kode sumber ini dipublikasikan hanya untuk keperluan portofolio, penilaian akademik, dan pengujian aplikasi. Dilarang mengambil, memodifikasi, atau memperjualbelikan kode ini.
 
 <div align="center">
   <sub>Dibangun dengan dedikasi tinggi demi ketahanan pangan dan kedaulatan petani Indonesia. 🇮🇩</sub>
